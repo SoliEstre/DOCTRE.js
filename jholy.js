@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-// JHOT.js - JSON-HTML Object Tree definition //
+// JHOLy.js - JSON-HTML Object Lightly definition //
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
@@ -40,12 +40,12 @@ SOFTWARE.
 // cold[4] - Extra attributes : object
 // cold[5] - Data attributes : object
 //
-// jhot = '[["div", "box.float#app@root", null], "text node"]'
+// jholy = '[["div", "box.float#app@root", null], "text node"]'
 // 
 // Match replace
-// ex) JHOT.parse([["|tag|", "|classes|#|id|", "empty content"], "|divider|"], { tag: () => isInline ? "span" | "div", classes: "test fixed", id: getId(), divider: it => '<hr class="' + it + '" />' })
+// ex) JHoly.parse([["|tag|", "|classes|#|id|", "empty content"], "|divider|"], { tag: () => isInline ? "span" | "div", classes: "test fixed", id: getId(), divider: it => '<hr class="' + it + '" />' })
 
-class JHOT {
+class JHoly {
 
     static createElement(tagName, classIdName, contentData, style, attrs = {}, datas = {}) {
         if (tagName instanceof Array) return this.createElement(...tagName);
@@ -113,34 +113,34 @@ class JHOT {
         return df;
     }
 
-    static matchReplace(jhotString, matchReplacer = {}) {
+    static matchReplace(jholyString, matchReplacer = {}) {
         if (matchReplacer != null) for (const key in matchReplacer) {
             const replacer = matchReplacer[key];
             switch (typeof replacer) {
                 case "string":
-                    jhotString.replace("|" + key + "|", replacer);
+                    jholyString.replace("|" + key + "|", replacer);
                     break;
                 case "function":
-                    jhotString.replace("|" + key + "|", replacer(key));
+                    jholyString.replace("|" + key + "|", replacer(key));
                     break;
             }
         }
-        jhotString.replace(/\|([^\|]*)\|/g, "$1");
-        return jhotString;
+        jholyString.replace(/\|([^\|]*)\|/g, "$1");
+        return jholyString;
     }
 
-    static parse(jhotString, matchReplacer = {}) {
-        return this.createFragment(JSON.parse(this.matchReplace(jhotString, matchReplacer)));
+    static parse(jholyString, matchReplacer = {}) {
+        return this.createFragment(JSON.parse(this.matchReplace(jholyString, matchReplacer)));
     }
 
-    static live(jhotColdOrString, matchReplacer = {}) {
-        if (typeof jhotColdOrString == "string") return this.parse(jhotColdOrString, matchReplacer);
-        else return this.createFragment(jhotColdOrString);
+    static live(jholyStringOrCold, matchReplacer = {}) {
+        if (typeof jholyStringOrCold == "string") return this.parse(jholyStringOrCold, matchReplacer);
+        else return this.createFragment(jholyStringOrCold);
     }
 
-    static takeOut(jhotColdOrString, matchReplacer = {}) {
+    static takeOut(jholyStringOrCold, matchReplacer = {}) {
         const element = document.createElement("tamplate");
-        element.append(this.live(jhotColdOrString, matchReplacer));
+        element.append(this.live(jholyStringOrCold, matchReplacer));
         return element;
     }
 
@@ -212,24 +212,24 @@ class JHOT {
     static patch() {
         const attach = (cls, name, value) => Object.defineProperty(cls.prototype, name, { value, writable: true, configurable: true, enumerable: false });
 
-        attach(NodeList, "coldify", function (trimIndent = true) { return JHOT.coldify(this, trimIndent); });
-        attach(NodeList, "stringify", function (prettyJson = false, trimIndent = true) { return JHOT.stringify(this, prettyJson, trimIndent); });
+        attach(NodeList, "coldify", function (trimIndent = true) { return JHoly.coldify(this, trimIndent); });
+        attach(NodeList, "stringify", function (prettyJson = false, trimIndent = true) { return JHoly.stringify(this, prettyJson, trimIndent); });
 
-        attach(Node, "coldify", function (trimIndent = true) { return JHOT.coldify(this, trimIndent); });
+        attach(Node, "coldify", function (trimIndent = true) { return JHoly.coldify(this, trimIndent); });
         attach(Node, "coldified", function (trimIndent = true) { const cold = this.coldify(trimIndent); this.remove(); return cold; });
-        attach(Node, "stringify", function (prettyJson = false, trimIndent = true) { return JHOT.stringify(this, prettyJson, trimIndent); });
-        attach(Node, "stringified", function (prettyJson = false, trimIndent = true) { const jhot = this.stringify(prettyJson, trimIndent); this.remove(); return jhot; });
+        attach(Node, "stringify", function (prettyJson = false, trimIndent = true) { return JHoly.stringify(this, prettyJson, trimIndent); });
+        attach(Node, "stringified", function (prettyJson = false, trimIndent = true) { const jholy = this.stringify(prettyJson, trimIndent); this.remove(); return jholy; });
 
         attach(Element, "cold", function (trimIndent = true) { return this.childNodes.coldify(trimIndent); });
         attach(Element, "takeCold", function (trimIndent = true) { const cold = this.cold(trimIndent); this.innerHTML = ""; return cold; });
         attach(Element, "frozen", function (prettyJson = false, trimIndent = true) { return this.childNodes.stringify(prettyJson, trimIndent); });
         attach(Element, "takeFrozen", function (prettyJson = false, trimIndent = true) { const frozen = this.frozen(prettyJson, trimIndent); this.innerHTML = ""; return frozen; });
-        attach(Element, "alive", function (jhotColdOrString, matchReplacer = {}) { this.append(JHOT.live(jhotColdOrString, matchReplacer)); return this; });
-        attach(Element, "alone", function (jhotColdOrString, matchReplacer = {}) { this.innerHTML = ""; return this.alive(jhotColdOrString, matchReplacer); });
+        attach(Element, "alive", function (jholyStringOrCold, matchReplacer = {}) { this.append(JHoly.live(jholyStringOrCold, matchReplacer)); return this; });
+        attach(Element, "alone", function (jholyStringOrCold, matchReplacer = {}) { this.innerHTML = ""; return this.alive(jholyStringOrCold, matchReplacer); });
 
         attach(Element, "freeze", function (dataName = "frozen") { this.dataset[dataName] = this.childNodes.stringify(); return this; });
         attach(Element, "solid", function (dataName = "frozen") { this.freeze(dataName); this.innerHTML = ""; return this; });
-        attach(Element, "hot", function (matchReplacer = {}, dataName = "frozen") { return JHOT.live(this.dataset[dataName], matchReplacer); });
+        attach(Element, "hot", function (matchReplacer = {}, dataName = "frozen") { return JHoly.live(this.dataset[dataName], matchReplacer); });
         attach(Element, "worm", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); this.append(live); return live; });
         attach(Element, "melt", function (matchReplacer = {}, dataName = "frozen") { this.innerHTML = ""; return this.worm(matchReplacer, dataName); });
         attach(Element, "burn", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); delete this.dataset.frozen; return live; });

@@ -1,14 +1,14 @@
 # Korean
 
-# J-HOT : JSON - HTML Object Tree definition
+# J-HOLy : JSON - HTML Object Lightly definition
 
-JHOT.js는 HTML 요소 및 Tree를 JS/JSON Array 형식으로 정의하고,   
+JHOLy.js는 HTML 요소 Tree를 JS/JSON Array 형식으로 단순화하여여 정의하고,   
 HTML 트리를 JSON 문자열로 변환 및 역변환하는 유틸리티 라이브러리입니다.
 
 
 ## 소개
 
-JHOT.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 HTML로 변환할 수 있는 기능을 제공합니다.   
+JHOLy.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 HTML로 변환할 수 있는 기능을 제공합니다.   
 이를 통해 HTML 구조를 보다 쉽게 조작하고 저장할 수 있습니다.
 
 궁극적으로 HTML의 attribute에 DOM Tree를 보관할 수 있도록 하는 것을 목적으로 만들어졌습니다.
@@ -21,16 +21,16 @@ JHOT.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 HT
 노드 목록 및 엘리먼트 모두 \[\](array)로 표현되므로 Cold 상태 라고 부릅니다.   
 반드시 Array로 시작하므로 Element 위주라면 [["div"], ["span"], ["p"]]와 같은 형식이 됩니다.
 
-- **JHOT**: HCNL을 JSON으로 변환한 상태를 지칭합니다.   
+- **JHOLy**: HCNL을 JSON으로 변환한 상태를 지칭합니다.   
 마찬가지로 HCNL과 거의 동일하게 표현되므로 Frozen 상태라고 부릅니다.
 
 
 ## 로드
 
-JHOT.js는 클래식 javascript .js 파일로 제공됩니다.   
+JHOLy.js는 클래식 javascript .js 파일로 제공됩니다.   
 기본적으로 페이지에서 직접 로드하여 사용합니다.   
 
-추가로 JHOT.patch()를 실행하여 몽키패칭을 할 수 있으며,   
+추가로 JHoly.patch()를 실행하여 몽키패칭을 할 수 있으며,   
 NodeList, Node, Element 객체에서 바로 변환 할 수 있게 됩니다.
 
 ## 사용법
@@ -40,21 +40,21 @@ NodeList, Node, Element 객체에서 바로 변환 할 수 있게 됩니다.
 ```js
 
 // HTML 요소 생성
-const element = JHOT.createElement('div', 'box.float#app@root', 'Hello, World!');
+const element = JHoly.createElement('div', 'box.float#app@root', 'Hello, World!');
 document.body.appendChild(element);
 
 // JSON 문자열로 변환
-const jsonString = JHOT.stringify(element);
+const jsonString = JHoly.stringify(element);
 console.log(jsonString);
 
 // JSON 문자열을 다시 HTML로 변환
-const fragment = JHOT.parse(jsonString);
+const fragment = JHoly.parse(jsonString);
 document.body.appendChild(fragment);
 ```
 
 ### 주요 메서드
 
-#### `JHOT.createElement(tagName, classIdName, contentData, style, attrs, datas)`
+#### `JHoly.createElement(tagName, classIdName, contentData, style, attrs, datas)`
 
 주어진 CHEP으로 HTML 요소를 생성합니다.   
 classIdName은 ".class1.class2#id@name" 형식을 사용합니다.   
@@ -62,52 +62,52 @@ classIdName은 ".class1.class2#id@name" 형식을 사용합니다.
 
 <br />
 
-#### `JHOT.createFragment(hcnlArray)`
+#### `JHoly.createFragment(hcnlArray)`
 
 주어진 HCNL 배열을 DocumentFragment로 변환합니다.
 
-#### `JHOT.matchReplace(jhotString, matchReplacer)`
+#### `JHoly.matchReplace(jholyString, matchReplacer)`
 
-JHOT 문자열에서 매치된 키워드를 대체합니다. (내부용)   
+JHOLy 문자열에서 매치된 키워드를 대체합니다. (내부용)   
 
-#### `JHOT.parse(jhotString, matchReplacer)`
+#### `JHoly.parse(jholyString, matchReplacer)`
 
-JHOT 문자열을 파싱하여 DocumentFragment로 변환합니다.
+JHOLy 문자열을 파싱하여 DocumentFragment로 변환합니다.
 
-\* JHOT 코드의 parse 과정에서 HCNL로 변환되기 전에 자동으로 matchReplacer 객체를 참조하여   
+\* JHOLy 코드의 parse 과정에서 HCNL로 변환되기 전에 자동으로 matchReplacer 객체를 참조하여   
 |keyName|에 일치하는 텍스트가 value 또는 function의 리턴값으로 대체됩니다.
 
-#### `JHOT.live(jhotColdOrString, matchReplacer)`
+#### `JHoly.live(jholyStringOrCold, matchReplacer)`
 
-JHOT 문자열 또는 HCNL 배열을 DocumentFragment로 변환합니다.
+JHOLy 문자열 또는 HCNL 배열을 DocumentFragment로 변환합니다.
 
-#### `JHOT.takeOut(jhotColdOrString, matchReplacer)`
+#### `JHoly.takeOut(jholyStringOrCold, matchReplacer)`
 
-JHOT 문자열 또는 배열을 템플릿 요소로 변환합니다.
+JHOLy 문자열 또는 배열을 템플릿 요소로 변환합니다.
 
 <br />
 
-#### `JHOT.packAttributes(attrs)`
+#### `JHoly.packAttributes(attrs)`
 
 속성 객체를 패킹합니다. (내부용)
 
-#### `JHOT.frostNode(node, trimIndent)`
+#### `JHoly.frostNode(node, trimIndent)`
 
 노드를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
 
-#### `JHOT.coldify(nodeOrList, trimIndent)`
+#### `JHoly.coldify(nodeOrList, trimIndent)`
 
 노드 또는 노드 리스트를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
 
-#### `JHOT.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
+#### `JHoly.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
 
-노드 또는 노드 리스트 또는 HCNL 배열을 JHOT으로(JSON 문자열로) 변환합니다.
+노드 또는 노드 리스트 또는 HCNL 배열을 JHOLy으로(JSON 문자열로) 변환합니다.
 
 <br />
 
-#### `JHOT.patch()`
+#### `JHoly.patch()`
 
-Node, NodeList, Element 프로토타입에 JHOT 메서드를 추가합니다.   
+Node, NodeList, Element 프로토타입에 JHOLy 메서드를 추가합니다.   
 이 메서드를 호출하면 다음과 같은 메서드들을 각 객체에서 사용할 수 있습니다:
 
 - `Node.coldify(trimIndent = true)`   
@@ -150,11 +150,11 @@ Node, NodeList, Element 프로토타입에 JHOT 메서드를 추가합니다.
 
 <br />
 
-- `Element.alive(jhotColdOrString, matchReplacer = {})`   
-: JHOT 문자열 또는 배열을 DocumentFragment로 변환하여 추가합니다.
+- `Element.alive(jholyStringOrCold, matchReplacer = {})`   
+: JHOLy 문자열 또는 배열을 DocumentFragment로 변환하여 추가합니다.
 
-- `Element.alone(jhotColdOrString, matchReplacer = {})`   
-: JHOT 문자열 또는 배열을 DocumentFragment로 변환하여 자식 노드로 설정(overwrite)합니다.
+- `Element.alone(jholyStringOrCold, matchReplacer = {})`   
+: JHOLy 문자열 또는 배열을 DocumentFragment로 변환하여 자식 노드로 설정(overwrite)합니다.
 
 <br />
 
@@ -198,13 +198,13 @@ MIT License. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 # English
 
-# J-HOT : JSON - HTML Object Tree definition
+# J-HOLy : JSON - HTML Object Lightly definition
 
-JHOT.js is a utility library that defines HTML elements and trees in JS/JSON Array format, and converts and reverses HTML trees to JSON strings.
+JHOLy.js is a utility library that defines HTML elements tree in JS/JSON Array format lightly, and converts and reverses HTML trees to JSON strings.
 
 ## Introduction
 
-JHOT.js provides the ability to represent HTML elements in JSON Array format and convert them back to HTML. This makes it easier to manipulate and store HTML structures.
+JHOLy.js provides the ability to represent HTML elements in JSON Array format and convert them back to HTML. This makes it easier to manipulate and store HTML structures.
 
 Ultimately, it was created to store the DOM Tree in the attributes of HTML.
 
@@ -214,13 +214,13 @@ Ultimately, it was created to store the DOM Tree in the attributes of HTML.
 
 - **HCNL**: HTML Cold Node List - Refers to the Array object representation that can be converted to JSON of the node list. Since both node lists and elements are represented as \[\](array), it is called Cold state. It always starts with an Array, so if it is element-oriented, it will be in the form of [["div"], ["span"], ["p"]].
 
-- **JHOT**: Refers to the state converted to JSON from HCNL. Similarly, it is called Frozen state because it is almost identical to HCNL.
+- **JHOLy**: Refers to the state converted to JSON from HCNL. Similarly, it is called Frozen state because it is almost identical to HCNL.
 
 ## Load
 
-JHOT.js is provided as a classic javascript .js file. It is basically loaded directly from the page.
+JHOLy.js is provided as a classic javascript .js file. It is basically loaded directly from the page.
 
-Additionally, you can execute JHOT.patch() to perform monkey patching, allowing direct conversion from NodeList, Node, and Element objects.
+Additionally, you can execute JHoly.patch() to perform monkey patching, allowing direct conversion from NodeList, Node, and Element objects.
 
 ## Usage
 
@@ -228,71 +228,71 @@ Additionally, you can execute JHOT.patch() to perform monkey patching, allowing 
 
 ```js
 // Create HTML element
-const element = JHOT.createElement('div', 'box.float#app@root', 'Hello, World!');
+const element = JHoly.createElement('div', 'box.float#app@root', 'Hello, World!');
 document.body.appendChild(element);
 
 // Convert to JSON string
-const jsonString = JHOT.stringify(element);
+const jsonString = JHoly.stringify(element);
 console.log(jsonString);
 
 // Convert JSON string back to HTML
-const fragment = JHOT.parse(jsonString);
+const fragment = JHoly.parse(jsonString);
 document.body.appendChild(fragment);
 ```
 
 ### Main Methods
 
-#### `JHOT.createElement(tagName, classIdName, contentData, style, attrs, datas)`
+#### `JHoly.createElement(tagName, classIdName, contentData, style, attrs, datas)`
 
 Creates an HTML element with the given CHEP. classIdName uses the format ".class1.class2#id@name". Refer to the function comments for details.
 
 <br />
 
-#### `JHOT.createFragment(hcnlArray)`
+#### `JHoly.createFragment(hcnlArray)`
 
 Converts the given HCNL array to a DocumentFragment.
 
-#### `JHOT.matchReplace(jhotString, matchReplacer)`
+#### `JHoly.matchReplace(jholyString, matchReplacer)`
 
-Replaces matched keywords in the JHOT string. (Internal use)
+Replaces matched keywords in the JHOLy string. (Internal use)
 
-#### `JHOT.parse(jhotString, matchReplacer)`
+#### `JHoly.parse(jholyString, matchReplacer)`
 
-Parses the JHOT string and converts it to a DocumentFragment.
+Parses the JHOLy string and converts it to a DocumentFragment.
 
-\* During the parse process of JHOT code, before converting to HCNL, it automatically references the matchReplacer object and replaces the text matching |keyName| with the value or the return value of the function.
+\* During the parse process of JHOLy code, before converting to HCNL, it automatically references the matchReplacer object and replaces the text matching |keyName| with the value or the return value of the function.
 
-#### `JHOT.live(jhotColdOrString, matchReplacer)`
+#### `JHoly.live(jholyStringOrCold, matchReplacer)`
 
-Converts the JHOT string or HCNL array to a DocumentFragment.
+Converts the JHOLy string or HCNL array to a DocumentFragment.
 
-#### `JHOT.takeOut(jhotColdOrString, matchReplacer)`
+#### `JHoly.takeOut(jholyStringOrCold, matchReplacer)`
 
-Converts the JHOT string or array to a template element.
+Converts the JHOLy string or array to a template element.
 
 <br />
 
-#### `JHOT.packAttributes(attrs)`
+#### `JHoly.packAttributes(attrs)`
 
 Packs the attribute object. (Internal use)
 
-#### `JHOT.frostNode(node, trimIndent)`
+#### `JHoly.frostNode(node, trimIndent)`
 
 Freezes (serializes) the node and retrieves the HCNL array.
 
-#### `JHOT.coldify(nodeOrList, trimIndent)`
+#### `JHoly.coldify(nodeOrList, trimIndent)`
 
 Freezes (serializes) the node or node list and retrieves the HCNL array.
 
-#### `JHOT.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
+#### `JHoly.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
 
-Converts the node, node list, or HCNL array to JHOT (JSON string).
+Converts the node, node list, or HCNL array to JHOLy (JSON string).
 
 <br />
 
-#### `JHOT.patch()`
+#### `JHoly.patch()`
 
-Adds JHOT methods to the Node, NodeList, and Element prototypes. When this method is called, the following methods can be used on each object:
+Adds JHOLy methods to the Node, NodeList, and Element prototypes. When this method is called, the following methods can be used on each object:
 
 - `Node.coldify(trimIndent = true)`   
 : Freezes (serializes) the node.
@@ -334,11 +334,11 @@ Adds JHOT methods to the Node, NodeList, and Element prototypes. When this metho
 
 <br />
 
-- `Element.alive(jhotColdOrString, matchReplacer = {})`   
-: Converts the JHOT string or array to a DocumentFragment and adds it.
+- `Element.alive(jholyStringOrCold, matchReplacer = {})`   
+: Converts the JHOLy string or array to a DocumentFragment and adds it.
 
-- `Element.alone(jhotColdOrString, matchReplacer = {})`   
-: Converts the JHOT string or array to a DocumentFragment and sets it as the child node (overwrite).
+- `Element.alone(jholyStringOrCold, matchReplacer = {})`   
+: Converts the JHOLy string or array to a DocumentFragment and sets it as the child node (overwrite).
 
 <br />
 

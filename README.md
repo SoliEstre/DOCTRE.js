@@ -15,7 +15,7 @@ JHOLy.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 H
 
 ### 용어 설명
 
-- **CHEP**: Cold HTML Element Presentation - Array 또는 argument 형식의 HTML 엘리먼트 표현을 지칭합니다.
+- **HECP**: HTML Element Cold Presentation - Array 또는 argument 형식의 HTML 엘리먼트 표현을 지칭합니다.
 
 - **HCNL**: HTML Cold Node List - 노드 목록의 JSON으로 변환 가능한 Array 객체 표현을 지칭하며,   
 노드 목록 및 엘리먼트 모두 \[\](array)로 표현되므로 Cold 상태 라고 부릅니다.   
@@ -39,7 +39,7 @@ NodeList, Node, Element 객체에서 바로 변환 할 수 있게 됩니다.
 
 ```js
 
-// HTML 요소 생성
+// HECP로 HTML 요소 생성
 const element = JHoly.createElement('div', 'box.float#app@root', 'Hello, World!');
 document.body.appendChild(element);
 
@@ -56,7 +56,7 @@ document.body.appendChild(fragment);
 
 #### `JHoly.createElement(tagName, classIdName, contentData, style, attrs, datas)`
 
-주어진 CHEP으로 HTML 요소를 생성합니다.   
+주어진 HECP로 HTML 요소를 생성합니다.   
 classIdName은 ".class1.class2#id@name" 형식을 사용합니다.   
 \* 해당 function 주석 참조
 
@@ -210,7 +210,7 @@ Ultimately, it was created to store the DOM Tree in the attributes of HTML.
 
 ### Terminology
 
-- **CHEP**: Cold HTML Element Presentation - Refers to the HTML element representation in Array or argument format.
+- **HECP**: HTML Element Cold Presentation - Refers to the HTML element representation in Array or argument format.
 
 - **HCNL**: HTML Cold Node List - Refers to the Array object representation that can be converted to JSON of the node list. Since both node lists and elements are represented as \[\](array), it is called Cold state. It always starts with an Array, so if it is element-oriented, it will be in the form of [["div"], ["span"], ["p"]].
 
@@ -227,7 +227,7 @@ Additionally, you can execute JHoly.patch() to perform monkey patching, allowing
 ### Basic Usage
 
 ```js
-// Create HTML element
+// Create HTML element by HECP
 const element = JHoly.createElement('div', 'box.float#app@root', 'Hello, World!');
 document.body.appendChild(element);
 
@@ -244,7 +244,7 @@ document.body.appendChild(fragment);
 
 #### `JHoly.createElement(tagName, classIdName, contentData, style, attrs, datas)`
 
-Creates an HTML element with the given CHEP. classIdName uses the format ".class1.class2#id@name". Refer to the function comments for details.
+Creates an HTML element with the given HECP. classIdName uses the format ".class1.class2#id@name". Refer to the function comments for details.
 
 <br />
 

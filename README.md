@@ -193,3 +193,187 @@ Node, NodeList, Element 프로토타입에 JHOT 메서드를 추가합니다.
 ## 라이선스
 
 MIT License. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+<br />
+
+# English
+
+# J-HOT : JSON - HTML Object Tree definition
+
+JHOT.js is a utility library that defines HTML elements and trees in JS/JSON Array format, and converts and reverses HTML trees to JSON strings.
+
+## Introduction
+
+JHOT.js provides the ability to represent HTML elements in JSON Array format and convert them back to HTML. This makes it easier to manipulate and store HTML structures.
+
+Ultimately, it was created to store the DOM Tree in the attributes of HTML.
+
+### Terminology
+
+- **CHEP**: Cold HTML Element Presentation - Refers to the HTML element representation in Array or argument format.
+
+- **HCNL**: HTML Cold Node List - Refers to the Array object representation that can be converted to JSON of the node list. Since both node lists and elements are represented as \[\](array), it is called Cold state. It always starts with an Array, so if it is element-oriented, it will be in the form of [["div"], ["span"], ["p"]].
+
+- **JHOT**: Refers to the state converted to JSON from HCNL. Similarly, it is called Frozen state because it is almost identical to HCNL.
+
+## Load
+
+JHOT.js is provided as a classic javascript .js file. It is basically loaded directly from the page.
+
+Additionally, you can execute JHOT.patch() to perform monkey patching, allowing direct conversion from NodeList, Node, and Element objects.
+
+## Usage
+
+### Basic Usage
+
+```js
+// Create HTML element
+const element = JHOT.createElement('div', 'box.float#app@root', 'Hello, World!');
+document.body.appendChild(element);
+
+// Convert to JSON string
+const jsonString = JHOT.stringify(element);
+console.log(jsonString);
+
+// Convert JSON string back to HTML
+const fragment = JHOT.parse(jsonString);
+document.body.appendChild(fragment);
+```
+
+### Main Methods
+
+#### `JHOT.createElement(tagName, classIdName, contentData, style, attrs, datas)`
+
+Creates an HTML element with the given CHEP. classIdName uses the format ".class1.class2#id@name". Refer to the function comments for details.
+
+<br />
+
+#### `JHOT.createFragment(hcnlArray)`
+
+Converts the given HCNL array to a DocumentFragment.
+
+#### `JHOT.matchReplace(jhotString, matchReplacer)`
+
+Replaces matched keywords in the JHOT string. (Internal use)
+
+#### `JHOT.parse(jhotString, matchReplacer)`
+
+Parses the JHOT string and converts it to a DocumentFragment.
+
+\* During the parse process of JHOT code, before converting to HCNL, it automatically references the matchReplacer object and replaces the text matching |keyName| with the value or the return value of the function.
+
+#### `JHOT.live(jhotColdOrString, matchReplacer)`
+
+Converts the JHOT string or HCNL array to a DocumentFragment.
+
+#### `JHOT.takeOut(jhotColdOrString, matchReplacer)`
+
+Converts the JHOT string or array to a template element.
+
+<br />
+
+#### `JHOT.packAttributes(attrs)`
+
+Packs the attribute object. (Internal use)
+
+#### `JHOT.frostNode(node, trimIndent)`
+
+Freezes (serializes) the node and retrieves the HCNL array.
+
+#### `JHOT.coldify(nodeOrList, trimIndent)`
+
+Freezes (serializes) the node or node list and retrieves the HCNL array.
+
+#### `JHOT.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
+
+Converts the node, node list, or HCNL array to JHOT (JSON string).
+
+<br />
+
+#### `JHOT.patch()`
+
+Adds JHOT methods to the Node, NodeList, and Element prototypes. When this method is called, the following methods can be used on each object:
+
+- `Node.coldify(trimIndent = true)`   
+: Freezes (serializes) the node.
+
+- `Node.coldified(trimIndent = true)`   
+: Freezes the node and retrieves it, removing it from the DOM.
+
+<br />
+
+- `Node.stringify(prettyJson = false, trimIndent = true)`   
+: Converts the node to a JSON string and retrieves it.
+
+- `Node.stringified(prettyJson = false, trimIndent = true)`   
+: Converts the node to a JSON string and retrieves it, removing it from the DOM.
+
+<br />
+
+- `NodeList.coldify(trimIndent = true)`   
+: Freezes the node list and retrieves it.
+
+- `NodeList.stringify(prettyJson = false, trimIndent = true)`   
+: Converts the node list to a JSON string and retrieves it.
+
+<br />
+
+- `Element.cold(trimIndent = true)`   
+: Freezes the child nodes and retrieves them.
+
+- `Element.takeCold(trimIndent = true)`   
+: Freezes the child nodes and retrieves them, removing them from the DOM.
+
+<br />
+
+- `Element.frozen(prettyJson = false, trimIndent = true)`   
+: Converts the child nodes to a JSON string and retrieves it.
+
+- `Element.takeFrozen(prettyJson = false, trimIndent = true)`   
+: Converts the child nodes to a JSON string and retrieves it, removing them from the DOM.
+
+<br />
+
+- `Element.alive(jhotColdOrString, matchReplacer = {})`   
+: Converts the JHOT string or array to a DocumentFragment and adds it.
+
+- `Element.alone(jhotColdOrString, matchReplacer = {})`   
+: Converts the JHOT string or array to a DocumentFragment and sets it as the child node (overwrite).
+
+<br />
+
+- `Element.freeze(dataName = "frozen")`   
+: Converts the child nodes to a JSON string and stores it in the data attribute.
+
+- `Element.solid(dataName = "frozen")`   
+: Converts the child nodes to a JSON string, stores it in the data attribute, and removes them.
+
+<br />
+
+- `Element.hot(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment and retrieves it.
+
+- `Element.worm(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment and adds it.
+
+<br />
+
+- `Element.melt(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment and sets it as the child node.
+
+- `Element.burn(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment, adds it, and removes the data attribute.
+
+<br />
+
+- `Element.wormOut(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment, adds it, and removes the data attribute.
+
+- `Element.meltOut(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment, sets it as the child node, and removes the data attribute.
+
+<br />
+
+## License
+
+MIT License. For more details, refer to the [LICENSE](LICENSE) file.

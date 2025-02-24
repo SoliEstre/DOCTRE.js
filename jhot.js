@@ -94,9 +94,9 @@ class JHOT {
         return element;
     }
 
-    static createFragment(jhotArray) {
+    static createFragment(hcnlArray) {
         const df = document.createDocumentFragment();
-        for (const val of jhotArray) switch (typeof val) {
+        for (const val of hcnlArray) switch (typeof val) {
             case "string": 
                 const tmp = document.createElement("template");
                 tmp.innerHTML = val;

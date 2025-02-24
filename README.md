@@ -4,20 +4,20 @@ JHOT.js는 JSON-HTML Object Tree를 정의하고, HTML 트리를 JSON 문자열�
 
 ## 소개
 
-JHOT.js는 HTML 요소를 JSON 형식으로 표현하고, 이를 다시 HTML로 변환할 수 있는 기능을 제공합니다. 이를 통해 HTML 구조를 보다 쉽게 조작하고 저장할 수 있습니다.
+JHOT.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 HTML로 변환할 수 있는 기능을 제공합니다.
+이를 통해 HTML 구조를 보다 쉽게 조작하고 저장할 수 있습니다.
 
 ## 설치
 
-JHOT.js는 클래식 javascript .js 파일로 제공됩니다.
-페이지에서 직접 로드하여 사용합니다.
-추가로 JSON.patch()를 실행하여 몽키패칭을 할 수 있습니다.
+JHOT.js는 클래식 javascript .js 파일로 제공됩니다.   
+페이지에서 직접 로드하여 사용합니다.   
+추가로 JHOT.patch()를 실행하여 몽키패칭을 할 수 있습니다.
 
 ## 사용법
 
 ### 기본 사용법
 
 ```js
-import JHOT from 'jhot';
 
 // HTML 요소 생성
 const element = JHOT.createElement('div', 'box.float#app@root', 'Hello, World!');

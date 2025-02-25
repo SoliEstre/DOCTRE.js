@@ -46,23 +46,49 @@ SOFTWARE.
 
 class Doctre {
 
-    static createElement(tagName = "template", classIdNameType, contentData, style = {}, attrs = {}, datas = {}) {
+    static extractTagName(solidId) {
+        let tagName, majorAttrs;
+        if (typeof solidId == "string") {
+            const tagFilter = /^[\w:-]+/;
+            tagName = tagFilter.exec(solidId)[0];
+            majorAttrs = solidId.replace(tagFilter, "");
+        } else {
+            tagName = solidId.tagName;
+            delete solidId.tagName;
+            majorAttrs = solidId;
+        }
+        return [tagName, majorAttrs];
+    }
+
+    static extractMajorAttrs(majorAttrs, to = {}) {
+        const process = (string, divider, attrName) => {
+            const filter = new RegExp(divider + "[\w.-]*");
+            const match = filter.exec(string);
+            if (match != null) {
+                to[attrName] = match[0].replace(new RegExp("^" + divider), "");
+                return string.replace(filter, "");
+            } else return string;
+        };
+        const classIdName = process(majorAttrs, "\\$", "type");
+        const classId = process(classIdName, "@", "name");
+        const classes = process(classId, "#", "id");
+        if (classes.length > 0) to["class"] = classes === "." ? "" : classes.replace(/^\./, "").replace(/\./g, " ").replace(/\s+/g, " ").replace(/[^\w\s-]/g, "");
+        return to;
+    }
+
+    static extractTagAndMajorAttrs(solidId) {
+        const [tagName, majorAttrs] = this.extractTagName(solidId);
+        return this.extractMajorAttrs(majorAttrs, { tagName });
+    }
+
+
+    static createElement(tagName = "template", majorAttrs, contentData, style = {}, attrs = {}, datas = {}) {
         if (tagName instanceof Array) return this.createElement(...tagName);
 
         const element = document.createElement(tagName);
-        if (classIdNameType != null) {
-            const process = (string, divider, element, attrName) => {
-                const filter = new RegExp(divider + "[\w.-]*");
-                const match = filter.exec(string);
-                if (match != null) {
-                    element.setAttribute(attrName, match[0].replace(new RegExp("^" + divider), ""));
-                    return string.replace(filter, "");
-                } else return string;
-            };
-            const classIdName = process(classIdNameType, "$", element, "type");
-            const classId = process(classIdName, "@", element, "name");
-            const classes = process(classId, "#", element, "id");
-            if (classes.length > 0) element.setAttribute("class", classes === "." ? "" : classes.replace(/^\./, "").replace(/\./g, " ").replace(/\s+/g, " ").replace(/[^\w\s-]/g, ""));
+        if (majorAttrs != null) {
+            const extracted = typeof majorAttrs == "string" ? this.extractMajorAttrs(majorAttrs) : majorAttrs;
+            for (const attrName in extracted) element.setAttribute(attrName, extracted[attrName]);
         }
         if (attrs != null) for (const [key, value] of Object.entries(attrs)) switch (key) {
             case "id":
@@ -76,7 +102,7 @@ class Doctre {
                 element.setAttribute(key, value);
                 break;
         }
-        if (datas != null) for (const [key, value] of Object.entries(datas)) element.dataset[key] = value;
+        if (datas != null) Object.assign(element.dataset, datas);//for (const [key, value] of Object.entries(datas)) element.dataset[key] = value;
         if (contentData != null) switch (typeof contentData) {
             case "string":
                 element.innerHTML = contentData;
@@ -86,6 +112,7 @@ class Doctre {
                 if (contentData instanceof Array) element.append(this.createFragment(contentData));
                 else if (contentData instanceof NodeList) for (const node of contentData) element.appendChild(node);
                 else if (contentData instanceof Node) element.appendChild(contentData);
+                else if (contentData instanceof Doctre) element.appendChild(contentData.live);
                 else element.append(contentData);
                 break;
         };
@@ -96,13 +123,11 @@ class Doctre {
         return element;
     }
 
-    static createElementBy(tagClassIdNameType, contentData, style = {}, attrs = {}, datas = {}) {
-        if (tagClassIdNameType instanceof Array) return this.createElementBy(...tagClassIdNameType);
+    static createElementBy(solidId, contentData, style = {}, attrs = {}, datas = {}) {
+        if (solidId instanceof Array) return this.createElementBy(...solidId);
 
-        const tagFilter = /^[\w:-]+/;
-        const tagName = tagFilter.exec(tagClassIdNameType)[0];
-        const classIdNameType = tagClassIdNameType.replace(tagFilter, "");
-        return this.createElement(tagName, classIdNameType, contentData, style, attrs, datas);
+        let [tagName, majorAttrs] = this.extractTagName(solidId);
+        return this.createElement(tagName, majorAttrs, contentData, style, attrs, datas);
     }
 
     static createFragment(hcnlArray) {
@@ -117,6 +142,7 @@ class Doctre {
             case "object":
             default:
                 if (val instanceof Node) df.appendChild(val);
+                else if (val instanceof Doctre) df.appendChild(val.live);
                 else if (val instanceof Array) df.append(this.createElementBy(val));
                 else df.append(val);
                 break;
@@ -156,6 +182,45 @@ class Doctre {
     }
 
 
+    static getSolidId(tagName, className, id, name, type) {
+        let solidId = tagName;
+        if (className != null) solidId += "." + className.replace(/ /g, ".");
+        if (id != null) solidId += "#" + id;
+        if (name != null) solidId += "@" + name;
+        if (type != null) solidId += "$" + type;
+        return solidId;
+    }
+
+    static packTagAndMajorAttrs(element, asSolidId = false) {
+        const tagName = element.tagName.toLowerCase();
+        const className = element.getAttribute("class");
+        const id = element.getAttribute("id");
+        const name = element.getAttribute("name");
+        const type = element.getAttribute("type");
+
+        if (asSolidId) return this.getSolidId(tagName, className, id, name, type);
+        else {
+            const extracted = { tagName };
+            if (className != null) extracted["class"] = className;
+            if (id != null) extracted["id"] = id;
+            if (name != null) extracted["name"] = name;
+            if (type != null) extracted["type"] = type;
+            return extracted;
+        }
+    }
+
+    static getStyleObject(style) {
+        const styles = {};
+        const divided = style.split(";");
+        for (var item of divided) {
+            let [key, value] = item.split(":");
+            key = key.trim();
+            value = value.trim();
+            if (key && value) styles[key] = value;
+        }
+        return styles;
+    }
+
     static packAttributes(attrs) {
         const pack = {};
         for (const attr of attrs) {
@@ -176,57 +241,66 @@ class Doctre {
         return pack;
     }
 
-    static frostNode(node, styleToObject = true, trimIndent = true) {
-        if (node instanceof DocumentFragment) return this.coldify(node.childNodes);
-        else if (node instanceof Element) {
-            const frozen = [];
-            let tagClassesIdNameType = node.tagName.toLowerCase();
-            const className = node.getAttribute("class");
-            if (className != null) tagClassesIdNameType += "." + className.replace(/ /g, ".");
-            const id = node.getAttribute("id");
-            if (id != null) tagClassesIdNameType += "#" + id;
-            const name = node.getAttribute("name");
-            if (name != null) tagClassesIdNameType += "@" + name;
-            const type = node.getAttribute("type");
-            if (type != null) tagClassesIdNameType += "$" + type;
-            frozen.push(tagClassesIdNameType);
-            frozen.push(this.coldify(node.childNodes));
-            const style = node.getAttribute("style");
-            if (styleToObject && style != null) {
-                const styles = {};
-                const divided = style.split(";");
-                for (var item of divided) {
-                    let [key, value] = item.split(":");
-                    key = key.trim();
-                    value = value.trim();
-                    if (key && value) styles[key] = value;
-                }
-                frozen.push(styles);
-            } else frozen.push(style ?? {});
-            frozen.push(this.packAttributes(node.attributes));
-            frozen.push(node.dataset);
-            return frozen;
-        } else {
-            const text = node.nodeValue;
-            if (trimIndent) return text.split("\n").map(line => {
-                let std = line.trimStart();
-                if (std.length != line.length) std = " " + std;
-                let etd = line.trimEnd();
-                if (etd.lenth != std.length) etd += " ";
-                return etd;
-            }).join("\n");
-            else return text;
+    static getDataObject(dataset) {
+        const datas = {};
+        for (const key in dataset) datas[key] = dataset[key];
+        return datas;
+    }
+    
+
+    static trimHecp(hecp) {
+        for (var i = hecp.length - 1; i > 0; i--) {
+            if (typeof hecp[i] == "string" || hecp[i] instanceof Array) {
+                if (hecp[i].length == 0) delete hecp[i];
+                else break;
+            } else {
+                let count = 0;
+                for (const key in hecp[i]) count++;
+                if (count == 0) delete hecp[i];
+                else break;
+            }
         }
+        return hecp;
     }
 
-    static coldify(nodeOrList, styleToObject = true, trimIndent = true) {
+    static frostElement(element, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        const frozen = [];
+        frozen.push(this.packTagAndMajorAttrs(element, !elementAsDoctre));
+        frozen.push(this.coldify(element.childNodes, trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        const style = element.getAttribute("style");
+        if (styleToObject && style != null) frozen.push(this.getStyleObject(style));
+        else frozen.push(style ?? {});
+        frozen.push(this.packAttributes(element.attributes));
+        frozen.push(this.getDataObject(element.dataset));
+        return trimHecp ? this.trimHecp(frozen) : frozen;
+    }
+
+    static trimTextIndent(text) {
+        return text.split("\n").map(line => {
+            let std = line.trimStart();
+            if (std.length != line.length) std = " " + std;
+            let etd = line.trimEnd();
+            if (etd.lenth != std.length) etd += " ";
+            return etd;
+        }).join("\n");
+    }
+
+    static frostNode(node, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        if (node instanceof Doctre) return elementAsDoctre ? node : node.frost(trimHecp, styleToObject, trimIndent, elementAsDoctre);
+        else if (node instanceof DocumentFragment) return this.coldify(node.childNodes, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+        else if (node instanceof Element) return this.frostElement(node, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+        else return trimIndent ? this.trimTextIndent(node.nodeValue, trimIndent) : node.nodeValue;
+    }
+
+    static coldify(nodeOrList, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         const cold = [];
-        if (nodeOrList instanceof Node) cold.push(this.frostNode(nodeOrList, styleToObject, trimIndent));
-        else for (const node of nodeOrList) cold.push(this.frostNode(node, styleToObject, trimIndent));
+        if (nodeOrList instanceof Doctre) cold.push(elementAsDoctre ? nodeOrList : nodeOrList.frost(trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        else if (nodeOrList instanceof Node) cold.push(this.frostNode(nodeOrList, trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        else for (const node of nodeOrList) cold.push(this.frostNode(node, trimHecp, styleToObject, trimIndent, elementAsDoctre));
         return cold;
     }
 
-    static stringify(nodeOrListOrCold, prettyJson = false, styleToObject = false, trimIndent = true) {
+    static stringify(nodeOrListOrCold, prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
         if (!(nodeOrListOrCold instanceof Array)) nodeOrListOrCold = this.coldify(nodeOrListOrCold, trimIndent, styleToObject);
         if (prettyJson == null || prettyJson === false) return JSON.stringify(nodeOrListOrCold);
         else return JSON.stringify(nodeOrListOrCold, null, typeof prettyJson == "number" ? prettyJson : 2);
@@ -236,28 +310,117 @@ class Doctre {
     static patch() {
         const attach = (cls, name, value) => Object.defineProperty(cls.prototype, name, { value, writable: true, configurable: true, enumerable: false });
 
-        attach(NodeList, "coldify", function (styleToObject = true, trimIndent = true) { return Doctre.coldify(this, styleToObject, trimIndent); });
-        attach(NodeList, "stringify", function (prettyJson = false, styleToObject = false, trimIndent = true) { return Doctre.stringify(this, prettyJson, styleToObject, trimIndent); });
+        attach(NodeList, "coldify", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return Doctre.coldify(this, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
+        attach(NodeList, "stringify", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return Doctre.stringify(this, prettyJson, trimHecp, styleToObject, trimIndent); });
 
-        attach(Node, "coldify", function (styleToObject = true, trimIndent = true) { return Doctre.coldify(this, styleToObject, trimIndent); });
-        attach(Node, "coldified", function (styleToObject = true, trimIndent = true) { const cold = this.coldify(styleToObject, trimIndent); this.remove(); return cold; });
-        attach(Node, "stringify", function (prettyJson = false, styleToObject = false, trimIndent = true) { return Doctre.stringify(this, prettyJson, styleToObject, trimIndent); });
-        attach(Node, "stringified", function (prettyJson = false, styleToObject = false, trimIndent = true) { const frost = this.stringify(prettyJson, styleToObject, trimIndent); this.remove(); return frost; });
+        attach(Node, "coldify", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return Doctre.coldify(this, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
+        attach(Node, "coldified", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { const cold = this.coldify(trimHecp, styleToObject, trimIndent, elementAsDoctre); this.remove(); return cold; });
 
-        attach(Element, "cold", function (styleToObject = true, trimIndent = true) { return this.childNodes.coldify(trimIndent, styleToObject); });
-        attach(Element, "takeCold", function (styleToObject = true, trimIndent = true) { const cold = this.cold(trimIndent, styleToObject); this.innerHTML = ""; return cold; });
-        attach(Element, "frozen", function (prettyJson = false, styleToObject = false, trimIndent = true) { return this.childNodes.stringify(prettyJson, styleToObject, trimIndent); });
-        attach(Element, "takeFrozen", function (prettyJson = false, styleToObject = false, trimIndent = true) { const frozen = this.frozen(prettyJson, styleToObject, trimIndent); this.innerHTML = ""; return frozen; });
+        attach(Node, "stringify", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return Doctre.stringify(this, prettyJson, trimHecp, styleToObject, trimIndent); });
+        attach(Node, "stringified", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frost = this.stringify(prettyJson, trimHecp, styleToObject, trimIndent); this.remove(); return frost; });
+
+        attach(Element, "cold", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return this.childNodes.coldify(trimIndent, styleToObject, elementAsDoctre); });
+        attach(Element, "takeCold", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { const cold = this.cold(trimIndent, styleToObject, elementAsDoctre); this.innerHTML = ""; return cold; });
+
+        attach(Element, "frozen", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return this.childNodes.stringify(prettyJson, trimHecp, styleToObject, trimIndent); });
+        attach(Element, "takeFrozen", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frozen = this.frozen(prettyJson, trimHecp, styleToObject, trimIndent); this.innerHTML = ""; return frozen; });
+
         attach(Element, "alive", function (frostOrCold, matchReplacer = {}) { this.append(Doctre.live(frostOrCold, matchReplacer)); return this; });
         attach(Element, "alone", function (frostOrCold, matchReplacer = {}) { this.innerHTML = ""; return this.alive(frostOrCold, matchReplacer); });
 
         attach(Element, "freeze", function (dataName = "frozen") { this.dataset[dataName] = this.childNodes.stringify(); return this; });
         attach(Element, "solid", function (dataName = "frozen") { this.freeze(dataName); this.innerHTML = ""; return this; });
+
         attach(Element, "hot", function (matchReplacer = {}, dataName = "frozen") { return Doctre.live(this.dataset[dataName], matchReplacer); });
         attach(Element, "worm", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); this.append(live); return live; });
         attach(Element, "melt", function (matchReplacer = {}, dataName = "frozen") { this.innerHTML = ""; return this.worm(matchReplacer, dataName); });
+
         attach(Element, "burn", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); delete this.dataset.frozen; return live; });
         attach(Element, "wormOut", function (matchReplacer = {}, dataName = "frozen") { const frozen = this.dataset[dataName]; this.worm(frozen, matchReplacer); delete this.dataset.frozen; return frozen; });
         attach(Element, "meltOut", function (matchReplacer = {}, dataName = "frozen") { this.innerHTML = ""; return this.wormOut(matchReplacer, dataName); });
+    }
+
+
+    tagName;
+
+    classes;
+
+    id;
+    name;
+    type;
+
+    childDoctres;
+
+    style;
+    attrs;
+    datas;
+
+    constructor(solidIdOrExtracted, contentData, style = {}, attrs = {}, datas = {}) {
+        if (solidIdOrExtracted instanceof Array) {
+            solidIdOrExtracted = solidIdOrExtracted[0];
+            contentData = solidIdOrExtracted[1];
+            style = solidIdOrExtracted[2];
+            attrs = solidIdOrExtracted[3];
+            datas = solidIdOrExtracted[4];
+        }
+
+        if (solidIdOrExtracted != null) {
+            const extracted = typeof solidIdOrExtracted == "string" ? Doctre.extractTagAndMajorAttrs(solidIdOrExtracted) : solidIdOrExtracted;
+            this.tagName = extracted.tagName;
+            this.classes = extracted.class?.split(" ") ?? [];
+            this.id = extracted.id;
+            this.name = extracted.name;
+            this.type = extracted.type;
+        } else {
+            this.tagName = "tamplate";
+            this.classes = [];
+        }
+
+        if (contentData != null) this.childDoctres = Doctre.coldify(contentData, true, false, true);
+        else this.contentDoctres = [];
+
+        this.style = style ?? {};
+        this.attrs = attrs ?? {};
+        this.datas = datas ?? {};
+    }
+
+    get className() { return this.classes.join(" "); }
+    set className(value) { this.classes = value.split(" "); }
+
+    get majorAttrs() { return {
+        class: this.className,
+        id: this.id,
+        name: this.name,
+        type: this.type,
+    }; }
+
+    get solidId() { return Doctre.getSolidId(this.tagName, this.className, this.id, this.name, this.type); }
+
+
+    get live() { return Doctre.createElement(this.tagName, this.majorAttrs, this.childDoctres, this.style, this.attrs, this.datas); }
+
+    frost(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        const hecp = [this.solidId, Doctre.coldify(this.childDoctres, trimHecp, styleToObject, trimIndent, elementAsDoctre), this.style, this.attrs, this.datas];
+        return trimHecp ? Doctre.trimHecp(hecp) : hecp;
+    }
+
+    get icy() { return this.frost(false, true, false, false); }
+
+    toString(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
+        const hecp = this.frost(trimHecp, styleToObject, trimIndent, false);
+        if (prettyJson == null || prettyJson === false) return JSON.stringify(hecp);
+        return JSON.stringify(hecp, null, typeof prettyJson == "number" ? prettyJson : 2);
+    }
+
+
+
+    get chill() { return Doctre.createFragment(this.childDoctres); }
+
+    cold(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        return Doctre.coldify(this.childDoctres, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+    }
+
+    frozen(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
+        return Doctre.stringify(this.childDoctres, prettyJson, trimHecp, styleToObject, trimIndent);
     }
 }

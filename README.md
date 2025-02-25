@@ -1,6 +1,6 @@
 # Korean
 
-# J-HOLy : JSON - HTML Object Lightly definition
+# DOCTRE : Document Object Cold Taste Refrigeration Effortlessness definition
 
 DOCTRE.js는 HTML 요소 Tree를 JS/JSON Array 형식으로 단순화하여여 정의하고,   
 HTML 트리를 JSON 문자열로 변환 및 역변환하는 유틸리티 라이브러리입니다.
@@ -16,6 +16,14 @@ DOCTRE.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 
 ### 용어 설명
 
 - **HECP**: HTML Element Cold Presentation - Array 또는 argument 형식의 HTML 엘리먼트 표현을 지칭합니다.
+    - **v1**: 6개 항목의 배열로 Element를 표현합니다.   
+    성능 상 유리하므로 JS에서 inline으로 element를 작성할 때 사용하는 것을 권장합니다.
+
+    - **v2**: 5개 항목의 배열로 Element를 표현합니다.   
+    CSS query와 비슷하게 tag와 class, id를 하나의 string으로 정의하며,   
+    추가로 v1과 동일하게 name, type 속성도 함께 정의할 수 있습니다.   
+    cold 상태로 변환 및 해석 시 기본값입니다.
+
 
 - **HCNL**: HTML Cold Node List - 노드 목록의 JSON으로 변환 가능한 Array 객체 표현을 지칭하며,   
 노드 목록 및 엘리먼트 모두 \[\](array)로 표현되므로 Cold 상태 라고 부릅니다.   
@@ -56,8 +64,15 @@ document.body.appendChild(fragment);
 
 #### `Doctre.createElement(tagName, classIdNameType, contentData, style, attrs, datas)`
 
-주어진 HECP로 HTML 요소를 생성합니다.   
+주어진 HECP v1으로 HTML 요소를 생성합니다.   
 classIdNameType은 ".class1.class2#id@name$type" 형식을 사용합니다.   
+\* 해당 function 주석 참조
+
+<br />
+
+#### `Doctre.createElementBy(tagClassIdNameType, contentData, style, attrs, datas)`
+
+주어진 HECP v2로 HTML 요소를 생성합니다. tagClassIdNameType은 "tag.class1.class2#id@name$type" 형식을 사용합니다.   
 \* 해당 function 주석 참조
 
 <br />
@@ -91,15 +106,15 @@ HFNL 문자열 또는 배열을 템플릿 요소로 변환합니다.
 
 속성 객체를 패킹합니다. (내부용)
 
-#### `Doctre.frostNode(node, trimIndent)`
+#### `Doctre.frostNode(node, styleToObject, trimIndent)`
 
 노드를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
 
-#### `Doctre.coldify(nodeOrList, trimIndent)`
+#### `Doctre.coldify(nodeOrList, styleToObject, trimIndent)`
 
 노드 또는 노드 리스트를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
 
-#### `Doctre.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
+#### `Doctre.stringify(nodeOrListOrCold, prettyJson, styleToObject, trimIndent)`
 
 노드 또는 노드 리스트 또는 HCNL 배열을 HFNL으로(JSON 문자열로) 변환합니다.
 
@@ -110,42 +125,42 @@ HFNL 문자열 또는 배열을 템플릿 요소로 변환합니다.
 Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.   
 이 메서드를 호출하면 다음과 같은 메서드들을 각 객체에서 사용할 수 있습니다:
 
-- `Node.coldify(trimIndent = true)`   
+- `Node.coldify(styleToObject = true, trimIndent = true)`   
 : 노드를 냉동(serialize)합니다.
 
-- `Node.coldified(trimIndent = true)`   
+- `Node.coldified(styleToObject = true, trimIndent = true)`   
 : 노드를 냉동하여 가져오고 DOM에서 제거합니다.
 
 <br />
 
-- `Node.stringify(prettyJson = false, trimIndent = true)`   
+- `Node.stringify(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : 노드를 JSON 문자열로 변환하여 가져옵니다.
 
-- `Node.stringified(prettyJson = false, trimIndent = true)`   
+- `Node.stringified(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : 노드를 JSON 문자열로 변환하여 가져오고 DOM에서 제거합니다.
 
 <br />
 
-- `NodeList.coldify(trimIndent = true)`   
+- `NodeList.coldify(styleToObject = true, trimIndent = true)`   
 : 노드 리스트를 냉동하여 가져옵니다.
 
-- `NodeList.stringify(prettyJson = false, trimIndent = true)`   
+- `NodeList.stringify(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : 노드 리스트를 JSON 문자열로 변환하여 가져옵니다.
 
 <br />
 
-- `Element.cold(trimIndent = true)`   
+- `Element.cold(styleToObject = true, trimIndent = true)`   
 : 자식 노드들을 냉동하여 가져옵니다.
 
-- `Element.takeCold(trimIndent = true)`   
+- `Element.takeCold(styleToObject = true, trimIndent = true)`   
 : 자식 노드들을 냉동하여 가져오고 DOM에서 제거합니다.
 
 <br />
 
-- `Element.frozen(prettyJson = false, trimIndent = true)`   
+- `Element.frozen(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : 자식 노드들을 JSON 문자열로 변환하여 가져옵니다.
 
-- `Element.takeFrozen(prettyJson = false, trimIndent = true)`   
+- `Element.takeFrozen(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : 자식 노드들을 JSON 문자열로 변환하여 가져오고 DOM에서 제거합니다.
 
 <br />
@@ -198,7 +213,7 @@ MIT License. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 # English
 
-# J-HOLy : JSON - HTML Object Lightly definition
+# DOCTRE : Document Object Cold Taste Refrigeration Effortlessness definition
 
 DOCTRE.js is a utility library that defines HTML elements tree in JS/JSON Array format lightly, and converts and reverses HTML trees to JSON strings.
 
@@ -211,6 +226,13 @@ Ultimately, it was created to store the DOM Tree in the attributes of HTML.
 ### Terminology
 
 - **HECP**: HTML Element Cold Presentation - Refers to the HTML element representation in Array or argument format.
+    - **v1**: Represents an Element as an array of 6 items.   
+    It is recommended to use this format when creating elements inline in JS for performance benefits.
+
+    - **v2**: Represents an Element as an array of 5 items.   
+    Similar to CSS query, it defines tag, class, and id as a single string.   
+    Additionally, name and type attributes can also be defined in the same way as v1.   
+    This is the default format when converting and interpreting in cold state.
 
 - **HCNL**: HTML Cold Node List - Refers to the Array object representation that can be converted to JSON of the node list. Since both node lists and elements are represented as \[\](array), it is called Cold state. It always starts with an Array, so if it is element-oriented, it will be in the form of [["div"], ["span"], ["p"]].
 
@@ -244,7 +266,13 @@ document.body.appendChild(fragment);
 
 #### `Doctre.createElement(tagName, classIdNameType, contentData, style, attrs, datas)`
 
-Creates an HTML element with the given HECP. classIdNameType uses the format ".class1.class2#id@name$type". Refer to the function comments for details.
+Creates an HTML element with the given HECP v1. classIdNameType uses the format ".class1.class2#id@name$type". Refer to the function comments for details.
+
+<br />
+
+#### `Doctre.createElementBy(tagClassIdNameType, contentData, style, attrs, datas)`
+
+Creates an HTML element with the given HECP v2. tagClassIdNameType uses the format "tag.class1.class2#id@name$type". Refer to the function comments for details.
 
 <br />
 
@@ -276,15 +304,15 @@ Converts the HFNL string or array to a template element.
 
 Packs the attribute object. (Internal use)
 
-#### `Doctre.frostNode(node, trimIndent)`
+#### `Doctre.frostNode(node, styleToObject, trimIndent)`
 
 Freezes (serializes) the node and retrieves the HCNL array.
 
-#### `Doctre.coldify(nodeOrList, trimIndent)`
+#### `Doctre.coldify(nodeOrList, styleToObject, trimIndent)`
 
 Freezes (serializes) the node or node list and retrieves the HCNL array.
 
-#### `Doctre.stringify(nodeOrListOrCold, prettyJson, trimIndent)`
+#### `Doctre.stringify(nodeOrListOrCold, prettyJson, styleToObject, trimIndent)`
 
 Converts the node, node list, or HCNL array to HFNL (JSON string).
 
@@ -294,42 +322,42 @@ Converts the node, node list, or HCNL array to HFNL (JSON string).
 
 Adds HFNL methods to the Node, NodeList, and Element prototypes. When this method is called, the following methods can be used on each object:
 
-- `Node.coldify(trimIndent = true)`   
+- `Node.coldify(styleToObject = true, trimIndent = true)`   
 : Freezes (serializes) the node.
 
-- `Node.coldified(trimIndent = true)`   
+- `Node.coldified(styleToObject = true, trimIndent = true)`   
 : Freezes the node and retrieves it, removing it from the DOM.
 
 <br />
 
-- `Node.stringify(prettyJson = false, trimIndent = true)`   
+- `Node.stringify(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : Converts the node to a JSON string and retrieves it.
 
-- `Node.stringified(prettyJson = false, trimIndent = true)`   
+- `Node.stringified(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : Converts the node to a JSON string and retrieves it, removing it from the DOM.
 
 <br />
 
-- `NodeList.coldify(trimIndent = true)`   
+- `NodeList.coldify(styleToObject = true, trimIndent = true)`   
 : Freezes the node list and retrieves it.
 
-- `NodeList.stringify(prettyJson = false, trimIndent = true)`   
+- `NodeList.stringify(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : Converts the node list to a JSON string and retrieves it.
 
 <br />
 
-- `Element.cold(trimIndent = true)`   
+- `Element.cold(styleToObject = true, trimIndent = true)`   
 : Freezes the child nodes and retrieves them.
 
-- `Element.takeCold(trimIndent = true)`   
+- `Element.takeCold(styleToObject = true, trimIndent = true)`   
 : Freezes the child nodes and retrieves them, removing them from the DOM.
 
 <br />
 
-- `Element.frozen(prettyJson = false, trimIndent = true)`   
+- `Element.frozen(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : Converts the child nodes to a JSON string and retrieves it.
 
-- `Element.takeFrozen(prettyJson = false, trimIndent = true)`   
+- `Element.takeFrozen(prettyJson = false, styleToObject = false, trimIndent = true)`   
 : Converts the child nodes to a JSON string and retrieves it, removing them from the DOM.
 
 <br />

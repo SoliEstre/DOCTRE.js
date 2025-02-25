@@ -30,11 +30,11 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.1 / release 2025.02.24
+// v0.2 / release 2025.02.25
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name : string
-// cold[1] - Classes, id, name = ".class1.class2#id@name" / "" : string
+// cold[1] - Classes, id, name, type = ".class1.class2#id@name$type" / "" : string
 // cold[2] - Content data = cold HCNL : Array / text or html codes or empty: string / node list : NodeList / element : Element / node : Node
 // cold[3] - Style codes : string
 // cold[4] - Extra attributes : object
@@ -43,32 +43,32 @@ SOFTWARE.
 // frost = '[["div", "box.float#app@root", null], "text node"]'
 // 
 // Match replace
-// ex) Doctre.parse([["|tag|", "|classes|#|id|", "empty content"], "|divider|"], { tag: () => isInline ? "span" | "div", classes: "test fixed", id: getId(), divider: it => '<hr class="' + it + '" />' })
+// ex) Doctre.parse([["|tag|.|classes|#|id|", "empty content"], "|divider|"], { tag: () => isInline ? "span" | "div", classes: "test fixed", id: getId(), divider: it => '<hr class="' + it + '" />' })
 
 class Doctre {
 
-    static createElement(tagName, classIdName, contentData, style, attrs = {}, datas = {}) {
+    static createElement(tagName, classIdNameType, contentData, style, attrs = {}, datas = {}) {
         if (tagName instanceof Array) return this.createElement(...tagName);
 
         const element = document.createElement(tagName);
-        if (classIdName != null) {
-            const nameFilter = /@[\w.-]*/;
-            const nameMatch = nameFilter.exec(classIdName);
-            if (nameMatch != null) {
-                element.setAttribute("name", nameMatch[0].replace(/^@/, ""));
-                classIdName.replace(nameFilter, "");
-            }
-            const idFilter = /#[\w.-]*/;
-            const idMatch = idFilter.exec(classIdName);
-            if (idMatch != null) {
-                element.setAttribute("id", idMatch[0].replace(/^#/, ""));
-                classIdName.replace(idFilter, "");
-            }
-            if (classIdName.length > 0) element.setAttribute("class", classIdName === "." ? "" : classIdName.replace(/^\./, "").replace(/\./g, " ").replace(/\s+/g, " ").replace(/[^\w\s-]/g, ""));
+        if (classIdNameType != null) {
+            const process = (string, divider, element, attrName) => {
+                const filter = new RegExp(divider + "[\w.-]*");
+                const match = filter.exec(string);
+                if (match != null) {
+                    element.setAttribute(attrName, match[0].replace(new RegExp("^" + divider), ""));
+                    return string.replace(filter, "");
+                } else return string;
+            };
+            const classIdName = process(classIdNameType, "$", element, "type");
+            const classId = process(classIdName, "@", element, "name");
+            const classes = process(classId, "#", element, "id");
+            if (classes.length > 0) element.setAttribute("class", classes === "." ? "" : classes.replace(/^\./, "").replace(/\./g, " ").replace(/\s+/g, " ").replace(/[^\w\s-]/g, ""));
         }
         if (attrs != null) for (const [key, value] of Object.entries(attrs)) switch (key) {
             case "id":
             case "name":
+            case "type":
             case "class":
             case "style":
                 break;
@@ -152,6 +152,7 @@ class Doctre {
             switch (name) {
                 case "id":
                 case "name":
+                case "type":
                 case "class":
                 case "style":
                     break;
@@ -169,14 +170,16 @@ class Doctre {
         else if (node instanceof Element) {
             const frozen = [];
             frozen.push(node.tagName.toLowerCase());
-            let classIdName = "";
+            let classIdNameType = "";
             const className = node.getAttribute("class");
-            if (className != null) classIdName += "." + node.className.replace(/ /g, ".");
+            if (className != null) classIdNameType += "." + className.replace(/ /g, ".");
             const id = node.getAttribute("id");
-            if (id != null) classIdName += "#" + node.id;
+            if (id != null) classIdNameType += "#" + id;
             const name = node.getAttribute("name");
-            if (name != null) classIdName += "@" + node.name;
-            frozen.push(classIdName);
+            if (name != null) classIdNameType += "@" + name;
+            const type = node.getAttribute("type");
+            if (type != null) classIdNameType += "$" + type;
+            frozen.push(classIdNameType);
             frozen.push(this.coldify(node.childNodes));
             frozen.push(node.getAttribute("style"));
             frozen.push(this.packAttributes(node.attributes));

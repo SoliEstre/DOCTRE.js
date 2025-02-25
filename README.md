@@ -54,10 +54,10 @@ document.body.appendChild(fragment);
 
 ### 주요 메서드
 
-#### `Doctre.createElement(tagName, classIdName, contentData, style, attrs, datas)`
+#### `Doctre.createElement(tagName, classIdNameType, contentData, style, attrs, datas)`
 
 주어진 HECP로 HTML 요소를 생성합니다.   
-classIdName은 ".class1.class2#id@name" 형식을 사용합니다.   
+classIdNameType은 ".class1.class2#id@name$type" 형식을 사용합니다.   
 \* 해당 function 주석 참조
 
 <br />
@@ -242,9 +242,9 @@ document.body.appendChild(fragment);
 
 ### Main Methods
 
-#### `Doctre.createElement(tagName, classIdName, contentData, style, attrs, datas)`
+#### `Doctre.createElement(tagName, classIdNameType, contentData, style, attrs, datas)`
 
-Creates an HTML element with the given HECP. classIdName uses the format ".class1.class2#id@name". Refer to the function comments for details.
+Creates an HTML element with the given HECP. classIdNameType uses the format ".class1.class2#id@name$type". Refer to the function comments for details.
 
 <br />
 

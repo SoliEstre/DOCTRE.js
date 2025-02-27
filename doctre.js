@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.2 / release 2025.02.25
+// v0.3 / release 2025.02.26
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -38,6 +38,7 @@ SOFTWARE.
 // cold[2] - Style codes : string / styles : object
 // cold[3] - Extra attributes : object
 // cold[4] - Data attributes : object
+//
 //
 // frost = '[["div.box.float#app@root", null], "text node or html code"]'
 // 
@@ -82,88 +83,109 @@ class Doctre {
     }
 
 
-    static createElement(tagName = "template", majorAttrs, contentData, style = {}, attrs = {}, datas = {}) {
+    static createElement(tagName = "template", majorAttrs, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
         if (tagName instanceof Array) return this.createElement(...tagName);
 
-        const element = document.createElement(tagName);
+        const element = document.createElement(this.matchReplace(tagName, matchReplacer));
         if (majorAttrs != null) {
             const extracted = typeof majorAttrs == "string" ? this.extractMajorAttrs(majorAttrs) : majorAttrs;
-            for (const attrName in extracted) element.setAttribute(attrName, extracted[attrName]);
+            for (const attrName in extracted) element.setAttribute(this.matchReplace(attrName, matchReplacer), this.matchReplace(extracted[attrName], matchReplacer));
         }
-        if (attrs != null) for (const [key, value] of Object.entries(attrs)) switch (key) {
-            case "id":
-            case "name":
-            case "type":
-            case "class":
-            case "style":
-                break;
+        if (attrs != null) for (let [key, value] of Object.entries(attrs)) {
+            key = this.matchReplace(key, matchReplacer);
+            value = this.matchReplace(value, matchReplacer);
 
-            default:
-                element.setAttribute(key, value);
-                break;
+            switch (key) {
+                case "id":
+                case "name":
+                case "type":
+                case "class":
+                case "style":
+                    break;
+
+                default:
+                    element.setAttribute(key, value);
+                    break;
+            }
         }
-        if (datas != null) Object.assign(element.dataset, datas);//for (const [key, value] of Object.entries(datas)) element.dataset[key] = value;
+        if (datas != null) for (const [key, value] of Object.entries(datas)) element.dataset[this.matchReplace(key)] = this.matchReplace(value);//Object.assign(element.dataset, datas);//
         if (contentData != null) switch (typeof contentData) {
             case "string":
-                element.innerHTML = contentData;
+                element.innerHTML = this.matchReplace(contentData, matchReplacer);
                 break;
 
             default:
-                if (contentData instanceof Array) element.append(this.createFragment(contentData));
+                if (contentData instanceof Array) element.append(this.createFragment(contentData, matchReplacer));
                 else if (contentData instanceof NodeList) for (const node of contentData) element.appendChild(node);
                 else if (contentData instanceof Node) element.appendChild(contentData);
-                else if (contentData instanceof Doctre) element.appendChild(contentData.live);
+                else if (contentData instanceof Doctre) element.appendChild(contentData.fresh(matchReplacer));
                 else element.append(contentData);
                 break;
         };
         if (style != null) {
-            if (typeof style == "string") element.setAttribute("style", style);
-            else Object.assign(element.style, style);
+            if (typeof style == "string") element.setAttribute("style", this.matchReplace(style, matchReplacer));
+            else for (const [key, value] of Object.entries(style)) element.style[this.matchReplace(key)] = this.matchReplace(value);//Object.assign(element.style, style);//
         }
         return element;
     }
 
-    static createElementBy(solidId, contentData, style = {}, attrs = {}, datas = {}) {
-        if (solidId instanceof Array) return this.createElementBy(...solidId);
-
-        let [tagName, majorAttrs] = this.extractTagName(solidId);
-        return this.createElement(tagName, majorAttrs, contentData, style, attrs, datas);
+    static createElementReplaced(matchReplacer, tagName, majorAttrs, contentData, style = {}, attrs = {}, datas = {}, matchReplacerOrigin = {}) {
+        return this.createElement(tagName, majorAttrs, contentData, style, attrs, datas, matchReplacer ?? matchReplacerOrigin);
     }
 
-    static createFragment(hcnlArray) {
+    static createElementBy(solidId, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
+        if (solidId instanceof Array) return this.createElementBy(...solidId);
+
+        let [tagName, majorAttrs] = this.extractTagName(this.matchReplace(solidId, matchReplacer));
+        return this.createElement(tagName, majorAttrs, contentData, style, attrs, datas, matchReplacer);
+    }
+
+    static createElementReplacedBy(matchReplacer, solidId, contentData, style = {}, attrs = {}, datas = {}, matchReplacerOrigin = {}) {
+        return this.createElementBy(solidId, contentData, style, attrs, datas, matchReplacer ?? matchReplacerOrigin);
+    }
+
+    static createFragment(hcnlArray, matchReplacer = {}) {
         const df = document.createDocumentFragment();
         for (const val of hcnlArray) switch (typeof val) {
             case "string": 
                 const tmp = this.createElement();
-                tmp.innerHTML = val;
+                tmp.innerHTML = this.matchReplace(val, matchReplacer);
                 for (const node of tmp.content.childNodes) df.appendChild(node);
                 break;
 
             case "object":
             default:
                 if (val instanceof Node) df.appendChild(val);
-                else if (val instanceof Doctre) df.appendChild(val.live);
-                else if (val instanceof Array) df.append(this.createElementBy(val));
+                else if (val instanceof Doctre) df.appendChild(val.fresh(matchReplacer));
+                else if (val instanceof Array) df.append(this.createElementReplacedBy(matchReplacer, val));
                 else df.append(val);
                 break;
         };
         return df;
     }
 
-    static matchReplace(frost, matchReplacer = {}) {
+    static matchReplace(frostOrString, matchReplacer = {}) {
+        if (typeof frostOrString != "string") return this.matchReplaceObject(frostOrString, matchReplacer);
+
         if (matchReplacer != null) for (const key in matchReplacer) {
             const replacer = matchReplacer[key];
             switch (typeof replacer) {
                 case "string":
-                    frost.replace("|" + key + "|", replacer);
+                    frostOrString.replace("|" + key + "|", replacer);
                     break;
                 case "function":
-                    frost.replace("|" + key + "|", replacer(key));
+                    frostOrString.replace("|" + key + "|", replacer(key));
                     break;
             }
         }
-        frost.replace(/\|([^\|]*)\|/g, "$1");
-        return frost;
+        frostOrString.replace(/\|([^\|]*)\|/g, "$1");
+        return frostOrString;
+    }
+
+    static matchReplaceObject(object, matchReplacer = {}) {
+        const replaced = object.constructor();
+        for (const key in object) replaced[this.matchReplace(key, matchReplacer)] = this.matchReplace(object[key], matchReplacer);
+        return replaced;
     }
 
     static parse(frost, matchReplacer = {}) {
@@ -250,7 +272,8 @@ class Doctre {
 
     static trimHecp(hecp) {
         for (var i = hecp.length - 1; i > 0; i--) {
-            if (typeof hecp[i] == "string" || hecp[i] instanceof Array) {
+            if (hecp[i] == null) delete hecp[i];
+            else if (typeof hecp[i] == "string" || hecp[i] instanceof Array) {
                 if (hecp[i].length == 0) delete hecp[i];
                 else break;
             } else {
@@ -263,10 +286,10 @@ class Doctre {
         return hecp;
     }
 
-    static frostElement(element, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+    static frostElement(element, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         const frozen = [];
         frozen.push(this.packTagAndMajorAttrs(element, !elementAsDoctre));
-        frozen.push(this.coldify(element.childNodes, trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        frozen.push(this.coldify(element.childNodes, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre));
         const style = element.getAttribute("style");
         if (styleToObject && style != null) frozen.push(this.getStyleObject(style));
         else frozen.push(style ?? {});
@@ -285,51 +308,56 @@ class Doctre {
         }).join("\n");
     }
 
-    static frostNode(node, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
-        if (node instanceof Doctre) return elementAsDoctre ? node : node.frost(trimHecp, styleToObject, trimIndent, elementAsDoctre);
-        else if (node instanceof DocumentFragment) return this.coldify(node.childNodes, trimHecp, styleToObject, trimIndent, elementAsDoctre);
-        else if (node instanceof Element) return this.frostElement(node, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+    static frostNode(node, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        if (node instanceof Doctre) return elementAsDoctre ? node : node.frost(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+        else if (node instanceof DocumentFragment) return this.coldify(node.childNodes, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+        else if (node instanceof Element) return this.frostElement(node, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+        else if (node instanceof Array) return elementAsDoctre ? new Doctre(...node) : (trimHecp ? this.trimHecp(node) : node);
         else return trimIndent ? this.trimTextIndent(node.nodeValue, trimIndent) : node.nodeValue;
     }
 
-    static coldify(nodeOrList, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+    static coldify(nodeOrList, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
         const cold = [];
-        if (nodeOrList instanceof Doctre) cold.push(elementAsDoctre ? nodeOrList : nodeOrList.frost(trimHecp, styleToObject, trimIndent, elementAsDoctre));
-        else if (nodeOrList instanceof Node) cold.push(this.frostNode(nodeOrList, trimHecp, styleToObject, trimIndent, elementAsDoctre));
-        else for (const node of nodeOrList) cold.push(this.frostNode(node, trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        if (nodeOrList instanceof Doctre) cold.push(elementAsDoctre ? nodeOrList : nodeOrList.frost(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        else if (nodeOrList instanceof Node) cold.push(this.frostNode(nodeOrList, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre));
+        else for (const node of nodeOrList) {
+            let frozen = this.frostNode(node, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+            if (!trimBobbleNode || typeof frozen != "string" || frozen.replace(/[\s\t\v\r\n]+/g, "").length > 0) cold.push(frozen);
+        }
         return cold;
     }
 
-    static stringify(nodeOrListOrCold, prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
-        if (!(nodeOrListOrCold instanceof Array)) nodeOrListOrCold = this.coldify(nodeOrListOrCold, trimIndent, styleToObject);
-        if (prettyJson == null || prettyJson === false) return JSON.stringify(nodeOrListOrCold);
-        else return JSON.stringify(nodeOrListOrCold, null, typeof prettyJson == "number" ? prettyJson : 2);
+    static stringify(nodeOrListOrCold, prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
+        const cold = this.coldify(nodeOrListOrCold, trimBobbleNode, trimHecp, styleToObject, trimIndent, false);
+
+        if (prettyJson == null || prettyJson === false) return JSON.stringify(cold);
+        else return JSON.stringify(cold, null, typeof prettyJson == "number" ? prettyJson : 2);
     }
 
 
     static patch() {
         const attach = (cls, name, value) => Object.defineProperty(cls.prototype, name, { value, writable: true, configurable: true, enumerable: false });
 
-        attach(NodeList, "coldify", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return Doctre.coldify(this, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
-        attach(NodeList, "stringify", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return Doctre.stringify(this, prettyJson, trimHecp, styleToObject, trimIndent); });
+        attach(NodeList, "coldify", function (trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return Doctre.coldify(this, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
+        attach(NodeList, "stringify", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return Doctre.stringify(this, prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); });
 
-        attach(Node, "coldify", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return Doctre.coldify(this, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
-        attach(Node, "coldified", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { const cold = this.coldify(trimHecp, styleToObject, trimIndent, elementAsDoctre); this.remove(); return cold; });
+        attach(Node, "coldify", function (trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return Doctre.coldify(this, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
+        attach(Node, "coldified", function (trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { const cold = this.coldify(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre); this.remove(); return cold; });
 
-        attach(Node, "stringify", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return Doctre.stringify(this, prettyJson, trimHecp, styleToObject, trimIndent); });
-        attach(Node, "stringified", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frost = this.stringify(prettyJson, trimHecp, styleToObject, trimIndent); this.remove(); return frost; });
+        attach(Node, "stringify", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return Doctre.stringify(this, prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); });
+        attach(Node, "stringified", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frost = this.stringify(prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); this.remove(); return frost; });
 
-        attach(Element, "cold", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return this.childNodes.coldify(trimIndent, styleToObject, elementAsDoctre); });
-        attach(Element, "takeCold", function (trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { const cold = this.cold(trimIndent, styleToObject, elementAsDoctre); this.innerHTML = ""; return cold; });
+        attach(Element, "cold", function (trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { return this.childNodes.coldify(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre); });
+        attach(Element, "takeCold", function (trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) { const cold = this.cold(trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre); this.innerHTML = ""; return cold; });
 
-        attach(Element, "frozen", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return this.childNodes.stringify(prettyJson, trimHecp, styleToObject, trimIndent); });
-        attach(Element, "takeFrozen", function (prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frozen = this.frozen(prettyJson, trimHecp, styleToObject, trimIndent); this.innerHTML = ""; return frozen; });
+        attach(Element, "frozen", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { return this.childNodes.stringify(prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); });
+        attach(Element, "takeFrozen", function (prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) { const frozen = this.frozen(prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent); this.innerHTML = ""; return frozen; });
 
         attach(Element, "alive", function (frostOrCold, matchReplacer = {}) { this.append(Doctre.live(frostOrCold, matchReplacer)); return this; });
         attach(Element, "alone", function (frostOrCold, matchReplacer = {}) { this.innerHTML = ""; return this.alive(frostOrCold, matchReplacer); });
 
-        attach(Element, "freeze", function (dataName = "frozen") { this.dataset[dataName] = this.childNodes.stringify(); return this; });
-        attach(Element, "solid", function (dataName = "frozen") { this.freeze(dataName); this.innerHTML = ""; return this; });
+        attach(Element, "freeze", function (dataName = "frozen", trimBobbleNode = true) { this.dataset[dataName] = this.childNodes.stringify(false, trimBobbleNode); return this; });
+        attach(Element, "solid", function (dataName = "frozen", trimBobbleNode = true) { this.freeze(dataName, trimBobbleNode); this.innerHTML = ""; return this; });
 
         attach(Element, "hot", function (matchReplacer = {}, dataName = "frozen") { return Doctre.live(this.dataset[dataName], matchReplacer); });
         attach(Element, "worm", function (matchReplacer = {}, dataName = "frozen") { const live = this.hot(matchReplacer, dataName); this.append(live); return live; });
@@ -355,13 +383,16 @@ class Doctre {
     attrs;
     datas;
 
-    constructor(solidIdOrExtracted, contentData, style = {}, attrs = {}, datas = {}) {
+    matchReplacer;
+
+    constructor(solidIdOrExtracted, contentData, style = {}, attrs = {}, datas = {}, matchReplacer = {}) {
         if (solidIdOrExtracted instanceof Array) {
             solidIdOrExtracted = solidIdOrExtracted[0];
             contentData = solidIdOrExtracted[1];
             style = solidIdOrExtracted[2];
             attrs = solidIdOrExtracted[3];
             datas = solidIdOrExtracted[4];
+            matchReplacer = solidIdOrExtracted[5];
         }
 
         if (solidIdOrExtracted != null) {
@@ -382,6 +413,7 @@ class Doctre {
         this.style = style ?? {};
         this.attrs = attrs ?? {};
         this.datas = datas ?? {};
+        this.matchReplacer = matchReplacer ?? {};
     }
 
     get className() { return this.classes.join(" "); }
@@ -399,15 +431,17 @@ class Doctre {
 
     get live() { return Doctre.createElement(this.tagName, this.majorAttrs, this.childDoctres, this.style, this.attrs, this.datas); }
 
-    frost(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
-        const hecp = [this.solidId, Doctre.coldify(this.childDoctres, trimHecp, styleToObject, trimIndent, elementAsDoctre), this.style, this.attrs, this.datas];
+    fresh(matchReplacer) { return Doctre.createElement(this.tagName, this.majorAttrs, this.childDoctres, this.style, this.attrs, this.datas, matchReplacer ?? this.matchReplacer ?? {}); }
+
+    frost(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        const hecp = [this.solidId, Doctre.coldify(this.childDoctres, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre), this.style, this.attrs, this.datas];
         return trimHecp ? Doctre.trimHecp(hecp) : hecp;
     }
 
     get icy() { return this.frost(false, true, false, false); }
 
-    toString(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
-        const hecp = this.frost(trimHecp, styleToObject, trimIndent, false);
+    toString(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
+        const hecp = this.frost(trimBobbleNode, trimHecp, styleToObject, trimIndent, false);
         if (prettyJson == null || prettyJson === false) return JSON.stringify(hecp);
         return JSON.stringify(hecp, null, typeof prettyJson == "number" ? prettyJson : 2);
     }
@@ -416,11 +450,11 @@ class Doctre {
 
     get chill() { return Doctre.createFragment(this.childDoctres); }
 
-    cold(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
-        return Doctre.coldify(this.childDoctres, trimHecp, styleToObject, trimIndent, elementAsDoctre);
+    cold(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp) {
+        return Doctre.coldify(this.childDoctres, trimBobbleNode, trimHecp, styleToObject, trimIndent, elementAsDoctre);
     }
 
-    frozen(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
-        return Doctre.stringify(this.childDoctres, prettyJson, trimHecp, styleToObject, trimIndent);
+    frozen(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp) {
+        return Doctre.stringify(this.childDoctres, prettyJson, trimBobbleNode, trimHecp, styleToObject, trimIndent);
     }
 }

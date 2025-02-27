@@ -2,9 +2,8 @@
 
 # DOCTRE : Document Object Cold Taste Refrigeration Effortlessness definition
 
-DOCTRE.js는 HTML 요소 Tree를 JS/JSON Array 형식으로 단순화하여여 정의하고,   
+DOCTRE.js는 HTML 요소 Tree를 JS/JSON Array 형식으로 단순화하여 정의하고,   
 HTML 트리를 JSON 문자열로 변환 및 역변환하는 유틸리티 라이브러리입니다.
-
 
 ## 소개
 
@@ -24,14 +23,12 @@ DOCTRE.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 
     추가로 v1과 동일하게 name, type 속성도 함께 정의할 수 있습니다.   
     cold 상태로 변환 및 해석 시 기본값입니다.
 
-
 - **HCNL**: HTML Cold Node List - 노드 목록의 JSON으로 변환 가능한 Array 객체 표현을 지칭하며,   
 노드 목록 및 엘리먼트 모두 \[\](array)로 표현되므로 Cold 상태 라고 부릅니다.   
 반드시 Array로 시작하므로 Element 위주라면 [["div"], ["span"], ["p"]]와 같은 형식이 됩니다.
 
 - **HFNL**: HCNL을 JSON으로 변환한 상태를 지칭합니다.   
 마찬가지로 HCNL과 거의 동일하게 표현되므로 Frozen 상태라고 부릅니다.
-
 
 ## 로드
 
@@ -46,7 +43,6 @@ NodeList, Node, Element 객체에서 바로 변환 할 수 있게 됩니다.
 ### 기본 사용법
 
 ```js
-
 // HECP로 HTML 요소 생성
 const element = Doctre.createElement('div', 'box.float#app@root', 'Hello, World!');
 document.body.appendChild(element);
@@ -76,18 +72,58 @@ document.body.appendChild(fragment);
 
 <br />
 
-#### `Doctre.createElement(tagName, majorAttrs, contentData, style, attrs, datas)`
+#### `Doctre.createElement(tagName, majorAttrs, contentData, style, attrs, datas, matchReplacer = {})`
 
 주어진 HECP v1으로 HTML 요소를 생성합니다.   
 majorAttrs는 ".class1.class2#id@name$type" 형식을 사용합니다.   
+matchReplacer를 사용하면 문자열 내의 |key| 형식의 패턴을 교체할 수 있습니다.   
 \* 해당 function 주석 참조
+
+#### `Doctre.createElementReplaced(matchReplacer, tagName, majorAttrs, contentData, style, attrs, datas, matchReplacerOrigin = {})`
+
+matchReplacer를 적용하여 주어진 HECP v1으로 HTML 요소를 생성합니다.
 
 <br />
 
-#### `Doctre.createElementBy(solidId, contentData, style, attrs, datas)`
+#### `Doctre.createElementBy(solidId, contentData, style, attrs, datas, matchReplacer = {})`
 
 주어진 HECP v2로 HTML 요소를 생성합니다. solidId는 "tag.class1.class2#id@name$type" 형식을 사용합니다.   
+matchReplacer를 사용하면 문자열 내의 |key| 형식의 패턴을 교체할 수 있습니다.   
 \* 해당 function 주석 참조
+
+#### `Doctre.createElementReplacedBy(matchReplacer, solidId, contentData, style, attrs, datas, matchReplacerOrigin = {})`
+
+matchReplacer를 적용하여 주어진 HECP v2로 HTML 요소를 생성합니다.
+
+<br />
+
+#### `Doctre.createFragment(hcnlArray, matchReplacer = {})`
+
+HCNL 배열에서 DocumentFragment를 생성합니다.
+
+<br />
+
+#### `Doctre.matchReplace(frostOrString, matchReplacer = {})`
+
+주어진 문자열이나 객체에서 |key| 형식의 패턴을 matchReplacer의 값으로 교체합니다. (내부용)
+
+#### `Doctre.matchReplaceObject(object, matchReplacer = {})`
+
+객체의 키와 값에 matchReplace를 적용합니다. (내부용)
+
+<br />
+
+#### `Doctre.parse(frost, matchReplacer = {})`
+
+JSON 문자열(HFNL)을 DocumentFragment로 파싱합니다.
+
+#### `Doctre.live(frostOrCold, matchReplacer = {})`
+
+HFNL 문자열 또는 HCNL 배열을 DocumentFragment로 변환합니다.
+
+#### `Doctre.takeOut(frostOrCold, matchReplacer = {})`
+
+HFNL 문자열 또는 HCNL 배열을 template 요소 내에 포함시킨 Element로 변환합니다.
 
 <br />
 
@@ -103,6 +139,10 @@ majorAttrs는 ".class1.class2#id@name$type" 형식을 사용합니다.
 
 주어진 스타일 문자열을 객체로 변환합니다. (내부용)
 
+#### `Doctre.packAttributes(attrs)`
+
+요소의 속성 목록에서 주요 속성을 제외한 속성들을 객체로 추출합니다. (내부용)
+
 #### `Doctre.getDataObject(dataset)`
 
 주어진 데이터셋을 객체로 변환합니다. (내부용)
@@ -113,25 +153,29 @@ majorAttrs는 ".class1.class2#id@name$type" 형식을 사용합니다.
 
 <br />
 
-#### `Doctre.frostElement(element, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+#### `Doctre.frostElement(element, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
 
 주어진 요소를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
+trimBobbleNode가 true이면 의미 없는 텍스트 노드를 제거합니다.
 
 #### `Doctre.trimTextIndent(text)`
 
 주어진 텍스트의 들여쓰기를 제거합니다. (내부용)
 
-#### `Doctre.frostNode(node, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+#### `Doctre.frostNode(node, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
 
 주어진 노드를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
+trimBobbleNode가 true이면 의미 없는 텍스트 노드를 제거합니다.
 
-#### `Doctre.coldify(nodeOrList, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+#### `Doctre.coldify(nodeOrList, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
 
 주어진 노드 또는 노드 리스트를 냉동(serialize)하여 HCNL 배열을 가져옵니다.
+trimBobbleNode가 true이면 의미 없는 텍스트 노드를 제거합니다.
 
-#### `Doctre.stringify(nodeOrListOrCold, prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`
+#### `Doctre.stringify(nodeOrListOrCold, prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`
 
 주어진 노드, 노드 리스트 또는 HCNL 배열을 HFNL으로(JSON 문자열로) 변환합니다.
+trimBobbleNode가 true이면 의미 없는 텍스트 노드를 제거합니다.
 
 <br />
 
@@ -236,6 +280,7 @@ Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.
 : 데이터 속성 객체.
 
 주어진 태그 이름과 주요 속성, 내용 데이터, 스타일, 추가 속성 및 데이터 속성을 사용하여 Doctre 인스턴스를 생성합니다.
+기본적으로 엘리먼트 편집 및 Node/Cold/Frozen으로의 상태 변환이 용이한 상태로 작업하기 위해 사용됩니다.
 
 빈 생성자를 호출하면 template 태그를 가지는 Doctre 인스턴스를 생성합니다.
 
@@ -263,6 +308,9 @@ Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.
 - `datas` (object)   
 : 데이터 속성 객체.
 
+- `matachReplacer` (object)
+: Node/Cold/Frozen 상태 변환 시 대체시킬 내용의 사전정의.
+
 #### 메서드
 
 - `get className()`   
@@ -282,16 +330,19 @@ Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.
 - `get live()`   
 : 요소를 생성하여 반환합니다.
 
+- `fresh(matchReplacer)`   
+: matchReplacer를 적용하여 요소를 생성하여 반환합니다.
+
 <br />
 
-- `frost(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
+- `frost(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
 : 요소를 냉동(serialize)하여 HCNL 배열을 반환합니다.
 - `get icy()`   
 : 냉동된 요소를 반환합니다.
 
 <br />
 
-- `toString(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
+- `toString(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
 : 요소를 JSON 문자열로 변환하여 반환합니다.
 
 <br />
@@ -302,12 +353,12 @@ Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.
 
 <br />
 
-- `cold(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
+- `cold(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
 : 자식 요소들을 냉동(serialize)하여 HCNL 배열을 반환합니다.
 
 <br />
 
-- `frozen(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
+- `frozen(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
 : 자식 요소들을 JSON 문자열로 변환하여 반환합니다.
 
 <br />
@@ -372,157 +423,163 @@ document.body.appendChild(fragment);
 ### Main Methods
 
 #### `Doctre.extractTagName(solidId)`
-
 Extracts the tag name and major attributes from the given solidId. (Internal use)
-
+  
 #### `Doctre.extractMajorAttrs(majorAttrs, to = {})`
-
-Extracts attributes from the given major attributes string and returns them as an object. (Internal use)
-
+Extracts attributes from the specified major attributes string and returns them as an object. (Internal use)
+  
 #### `Doctre.extractTagAndMajorAttrs(solidId)`
-
-Extracts the tag name and major attributes from the given solidId and returns them as an object. (Internal use)
-
-<br />
-
-#### `Doctre.createElement(tagName, majorAttrs, contentData, style, attrs, datas)`
-
-Creates an HTML element with the given HECP v1.   
-majorAttrs uses the format ".class1.class2#id@name$type".   
-\* Refer to the function comments for details.
+Extracts the tag name and major attributes from the specified solidId and returns them as an object. (Internal use)
 
 <br />
 
-#### `Doctre.createElementBy(solidId, contentData, style, attrs, datas)`
+#### `Doctre.createElement(tagName, majorAttrs, contentData, style, attrs, datas, matchReplacer = {})`
+Creates an HTML element using the given HECP v1.  
+The parameter majorAttrs uses the format ".class1.class2#id@name$type".  
+The matchReplacer parameter can be used to substitute patterns in the format |key| within strings.  
+*See the function documentation for details.
 
-Creates an HTML element with the given HECP v2. solidId uses the format "tag.class1.class2#id@name$type".   
-\* Refer to the function comments for details.
+#### `Doctre.createElementReplaced(matchReplacer, tagName, majorAttrs, contentData, style, attrs, datas, matchReplacerOrigin = {})`
+Creates an HTML element using HECP v1 with substitution applied via matchReplacer.
+
+<br />
+
+#### `Doctre.createElementBy(solidId, contentData, style, attrs, datas, matchReplacer = {})`
+Creates an HTML element using the given HECP v2.  
+The solidId uses the format "tag.class1.class2#id@name$type".  
+The matchReplacer parameter can be used to substitute |key| style patterns within the string.  
+*See the function documentation for details.
+
+#### `Doctre.createElementReplacedBy(matchReplacer, solidId, contentData, style, attrs, datas, matchReplacerOrigin = {})`
+Creates an HTML element using HECP v2 with substitution applied via matchReplacer.
+
+<br />
+
+#### `Doctre.createFragment(hcnlArray, matchReplacer = {})`
+Creates a DocumentFragment from the given HCNL array.
+
+<br />
+
+#### `Doctre.matchReplace(frostOrString, matchReplacer = {})`
+Replaces patterns in the format |key| within the given string or object with values provided in matchReplacer. (Internal use)
+
+#### `Doctre.matchReplaceObject(object, matchReplacer = {})`
+Applies match replacement to both keys and values of the object. (Internal use)
+
+<br />
+
+#### `Doctre.parse(frost, matchReplacer = {})`
+Parses the JSON string (HFNL) into a DocumentFragment.
+
+#### `Doctre.live(frostOrCold, matchReplacer = {})`
+Converts the HFNL string or HCNL array into a DocumentFragment.
+
+#### `Doctre.takeOut(frostOrCold, matchReplacer = {})`
+Converts the HFNL string or HCNL array into an Element contained within a template element.
 
 <br />
 
 #### `Doctre.getSolidId(tagName, className, id, name, type)`
-
-Generates a solidId from the given tag name and major attributes. (Internal use)
+Generates a solidId from the specified tag name and major attributes. (Internal use)
 
 #### `Doctre.packTagAndMajorAttrs(element, asSolidId = false)`
-
-Extracts the tag name and major attributes from the given element and returns them as an object. If asSolidId is true, returns as a solidId. (Internal use)
+Extracts the tag name and major attributes from the given element and returns them as an object.  
+If asSolidId is true, returns as a solidId string instead. (Internal use)
 
 #### `Doctre.getStyleObject(style)`
+Converts the given style string into an object. (Internal use)
 
-Converts the given style string to an object. (Internal use)
+#### `Doctre.packAttributes(attrs)`
+Extracts non-major attributes from an element’s attribute list and returns them as an object. (Internal use)
 
 #### `Doctre.getDataObject(dataset)`
-
-Converts the given dataset to an object. (Internal use)
+Converts the provided dataset into an object. (Internal use)
 
 #### `Doctre.trimHecp(hecp)`
-
 Removes empty items from the given HECP array.
 
 <br />
 
-#### `Doctre.frostElement(element, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
-
-Freezes (serializes) the given element and retrieves the HCNL array.
+#### `Doctre.frostElement(element, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+Serializes the given element to an HCNL array.  
+If trimBobbleNode is true, meaningless text nodes are removed.
 
 #### `Doctre.trimTextIndent(text)`
-
 Removes indentation from the given text. (Internal use)
 
-#### `Doctre.frostNode(node, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+#### `Doctre.frostNode(node, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+Serializes the given node to an HCNL array.  
+If trimBobbleNode is true, meaningless text nodes are removed.
 
-Freezes (serializes) the given node and retrieves the HCNL array.
+#### `Doctre.coldify(nodeOrList, trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
+Serializes the given node or node list to an HCNL array.  
+If trimBobbleNode is true, meaningless text nodes are removed.
 
-#### `Doctre.coldify(nodeOrList, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`
-
-Freezes (serializes) the given node or node list and retrieves the HCNL array.
-
-#### `Doctre.stringify(nodeOrListOrCold, prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`
-
-Converts the given node, node list, or HCNL array to HFNL (JSON string).
+#### `Doctre.stringify(nodeOrListOrCold, prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`
+Converts the given node, node list, or HCNL array to an HFNL (JSON string).  
+If trimBobbleNode is true, meaningless text nodes are removed.
 
 <br />
 
 #### `Doctre.patch()`
-
-Adds HFNL methods to the Node, NodeList, and Element prototypes. When this method is called, the following methods can be used on each object:
-
-- `Node.coldify(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
-: Freezes (serializes) the node.
-
-- `Node.coldified(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
-: Freezes the node and retrieves it, removing it from the DOM.
+Adds HFNL methods to the prototypes of Node, NodeList, and Element.  
+Once invoked, the following methods become available on these objects:
+  
+- `Node.coldify(...)`: Serializes the node.
+  
+- `Node.coldified(...)`: Serializes the node, retrieves it, and removes it from the DOM.
 
 <br />
 
-- `Node.stringify(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
-: Converts the node to a JSON string and retrieves it.
+- `Node.stringify(...)`: Converts the node to a JSON string and returns it.
 
-- `Node.stringified(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
-: Converts the node to a JSON string and retrieves it, removing it from the DOM.
+- `Node.stringified(...)`: Converts the node to a JSON string, returns it, and then removes it from the DOM.
 
 <br />
 
-- `NodeList.coldify(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
-: Freezes the node list and retrieves it.
+- `NodeList.coldify(...)`: Serializes the node list and returns it.
 
-- `NodeList.stringify(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
-: Converts the node list to a JSON string and retrieves it.
+- `NodeList.stringify(...)`: Converts the node list to a JSON string and returns it.
 
 <br />
 
-- `Element.cold(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
-: Freezes the child nodes and retrieves them.
+- `Element.cold(...)`: Serializes the child nodes and returns them.
 
-- `Element.takeCold(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
-: Freezes the child nodes and retrieves them, removing them from the DOM.
+- `Element.takeCold(...)`: Serializes and retrieves the child nodes, then removes them from the DOM.
 
 <br />
 
-- `Element.frozen(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
-: Converts the child nodes to a JSON string and retrieves it.
+- `Element.frozen(...)`: Converts the child nodes to a JSON string and returns it.
 
-- `Element.takeFrozen(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
-: Converts the child nodes to a JSON string and retrieves it, removing them from the DOM.
+- `Element.takeFrozen(...)`: Converts the child nodes to a JSON string, returns it, and removes them from the DOM.
 
 <br />
 
-- `Element.alive(frostOrCold, matchReplacer = {})`   
-: Converts the HFNL string or array to a DocumentFragment and adds it.
+- `Element.alive(frostOrCold, matchReplacer = {})`: Converts an HFNL string or array to a DocumentFragment and appends it.
 
-- `Element.alone(frostOrCold, matchReplacer = {})`   
-: Converts the HFNL string or array to a DocumentFragment and sets it as the child node (overwrite).
+- `Element.alone(frostOrCold, matchReplacer = {})`: Converts an HFNL string or array to a DocumentFragment and overwrites the child nodes.
 
 <br />
 
-- `Element.freeze(dataName = "frozen")`   
-: Converts the child nodes to a JSON string and stores it in the data attribute.
+- `Element.freeze(dataName = "frozen")`: Serializes the child nodes to a JSON string and stores it in a data attribute.
 
-- `Element.solid(dataName = "frozen")`   
-: Converts the child nodes to a JSON string, stores it in the data attribute, and removes them.
+- `Element.solid(dataName = "frozen")`: Serializes the child nodes to a JSON string, stores it in a data attribute, and removes the child nodes.
 
 <br />
 
-- `Element.hot(matchReplacer = {}, dataName = "frozen")`   
-: Converts the JSON string stored in the data attribute to a DocumentFragment and retrieves it.
+- `Element.hot(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string stored in the data attribute to a DocumentFragment and returns it.
 
-- `Element.worm(matchReplacer = {}, dataName = "frozen")`   
-: Converts the JSON string stored in the data attribute to a DocumentFragment and adds it.
+- `Element.worm(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment and appends it.
 
-- `Element.melt(matchReplacer = {}, dataName = "frozen")`   
-: Converts the JSON string stored in the data attribute to a DocumentFragment and sets it as the child node.
+- `Element.melt(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment and sets it as the child nodes.
 
 <br />
 
-- `Element.burn(matchReplacer = {}, dataName = "frozen")`   
-: Converts the JSON string stored in the data attribute to a DocumentFragment, adds it, and removes the data attribute.
+- `Element.burn(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment, appends it, and removes the data attribute.
 
-- `Element.wormOut(matchReplacer = {}, dataName = "frozen")`   
-: Converts the JSON string stored in the data attribute to a DocumentFragment, adds it, and removes the data attribute.
+- `Element.wormOut(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment, appends it, and then removes the data attribute.
 
-- `Element.meltOut(matchReplacer = {}, dataName = "frozen")`   
-: Converts the JSON string stored in the data attribute to a DocumentFragment, sets it as the child node, and removes the data attribute.
+- `Element.meltOut(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment, sets it as the child nodes, and removes the data attribute.
 
 <br />
 
@@ -571,6 +628,9 @@ Calling the constructor with no arguments creates a Doctre instance with a templ
 - `datas` (object)   
 : The data attributes object.
 
+- `matachReplacer` (object)
+: Predefined content for substitution during Node/Cold/Frozen state conversion.
+
 #### Methods
 
 - `get className()`   
@@ -590,16 +650,19 @@ Calling the constructor with no arguments creates a Doctre instance with a templ
 - `get live()`   
 : Creates and returns the element.
 
+- `fresh(matchReplacer)`   
+: Creates and returns the element, applying matchReplacer.
+
 <br />
 
-- `frost(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
+- `frost(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
 : Freezes (serializes) the element and returns the HCNL array.
 - `get icy()`   
 : Returns the frozen element.
 
 <br />
 
-- `toString(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
+- `toString(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
 : Converts the element to a JSON string and returns it.
 
 <br />
@@ -610,12 +673,12 @@ Calling the constructor with no arguments creates a Doctre instance with a templ
 
 <br />
 
-- `cold(trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
+- `cold(trimBobbleNode = false, trimHecp = false, styleToObject = !trimHecp, trimIndent = trimHecp, elementAsDoctre = !trimHecp)`   
 : Freezes (serializes) the child elements and returns the HCNL array.
 
 <br />
 
-- `frozen(prettyJson = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
+- `frozen(prettyJson = false, trimBobbleNode = false, trimHecp = true, styleToObject = !trimHecp, trimIndent = trimHecp)`   
 : Converts the child elements to a JSON string and returns it.
 
 <br />

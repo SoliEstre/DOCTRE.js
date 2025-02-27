@@ -169,16 +169,17 @@ class Doctre {
 
         if (matchReplacer != null) for (const key in matchReplacer) {
             const replacer = matchReplacer[key];
+            const regex = new RegExp("\\|" + key + "\\|", "g");
             switch (typeof replacer) {
                 case "string":
-                    frostOrString.replace("|" + key + "|", replacer);
+                    frostOrString = frostOrString.replace(regex, replacer);
                     break;
                 case "function":
-                    frostOrString.replace("|" + key + "|", replacer(key));
+                    frostOrString = frostOrString.replace(regex, replacer(key));
                     break;
             }
         }
-        frostOrString.replace(/\|([^\|]*)\|/g, "$1");
+        // frostOrString = frostOrString.replace(/\|([^\|]*)\|/g, "$1");
         return frostOrString;
     }
 

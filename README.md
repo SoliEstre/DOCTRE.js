@@ -244,10 +244,10 @@ Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.
 : data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 가져옵니다.
 
 - `Element.worm(matchReplacer = {}, dataName = "frozen")`   
-: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 추가합니다.
+: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 추가하고 추가된 NodeArray를 반환합니다.
 
 - `Element.melt(matchReplacer = {}, dataName = "frozen")`   
-: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 자식 노드로 설정합니다.
+: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 자식 노드로 설정하고 추가된 NodeArray를 반환합니다.
 
 <br />
 
@@ -255,10 +255,10 @@ Node, NodeList, Element 프로토타입에 HFNL 메서드를 추가합니다.
 : data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 추가하고 data 속성을 제거합니다.
 
 - `Element.wormOut(matchReplacer = {}, dataName = "frozen")`   
-: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 추가하고 data 속성을 제거합니다.
+: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 추가하고 data 속성을 제거하고 추가된 NodeArray를 반환합니다.
 
 - `Element.meltOut(matchReplacer = {}, dataName = "frozen")`   
-: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 자식 노드로 설정하고 data 속성을 제거합니다.
+: data 속성에 저장된 JSON 문자열을 DocumentFragment로 변환하여 자식 노드로 설정하고 data 속성을 제거하고 추가된 NodeArray를 반환합니다.
 
 <br />
 
@@ -569,17 +569,22 @@ Once invoked, the following methods become available on these objects:
 
 - `Element.hot(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string stored in the data attribute to a DocumentFragment and returns it.
 
-- `Element.worm(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment and appends it.
+- `Element.worm(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment, appends it, and returns the added NodeArray.
 
-- `Element.melt(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment and sets it as the child nodes.
+- `Element.melt(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string stored in the data attribute to a DocumentFragment, sets it as the child nodes, and returns the added NodeArray.
 
 <br />
 
-- `Element.burn(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment, appends it, and removes the data attribute.
+- `Element.burn(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string in the data attribute to a DocumentFragment, appends it, and removes the data attribute.
 
-- `Element.wormOut(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment, appends it, and then removes the data attribute.
+- `Element.wormOut(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string in the data attribute to a DocumentFragment, appends it, removes the data attribute, and returns the added NodeArray.
 
-- `Element.meltOut(matchReplacer = {}, dataName = "frozen")`: Converts the JSON string in the data attribute to a DocumentFragment, sets it as the child nodes, and removes the data attribute.
+- `Element.meltOut(matchReplacer = {}, dataName = "frozen")`   
+: Converts the JSON string in the data attribute to a DocumentFragment, sets it as the child nodes, removes the data attribute, and returns the added NodeArray.
 
 <br />
 

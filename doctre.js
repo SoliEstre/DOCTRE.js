@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.5 / release 2025.03.04
+// v0.5 / release 2025.03.04a
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -306,12 +306,12 @@ class Doctre {
         return trimHecp ? this.trimHecp(frozen) : frozen;
     }
 
-    static trimTextIndent(text) {
+    static trimTextIndent(text, trimIndent = false) {
         return text.split("\n").map(line => {
             let std = line.trimStart();
-            if (std.length != line.length) std = " " + std;
-            let etd = line.trimEnd();
-            if (etd.lenth != std.length) etd += " ";
+            if (!trimIndent && std.length != line.length) std = " " + std;
+            let etd = std.trimEnd();
+            if (!trimIndent && etd.lenth != std.length) etd += " ";
             return etd;
         }).join("\n");
     }

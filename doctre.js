@@ -30,7 +30,7 @@ SOFTWARE.
 // 
 // Cold(array object) assigning of HTML Tree for make to JSON string.
 // 
-// v0.12 / release 2025.08.07
+// v0.13 / release 2025.08.11
 // 
 // cold = [] - Cold HTML child node list
 // cold[0] - Tag name, classes, id, name, type = "tag.class1.class2#id@name$type" : string
@@ -124,7 +124,10 @@ class Doctre {
         };
         if (style != null) {
             if (typeof style == "string") element.setAttribute("style", this.matchReplace(style, matchReplacer));
-            else for (const [key, value] of Object.entries(style)) element.style.setProperty(this.matchReplace(key), this.matchReplace(value));//Object.assign(element.style, style);//
+            else for (const [key, value] of Object.entries(style)) {
+                if (key.includes("-")) element.style.setProperty(this.matchReplace(key), this.matchReplace(value));
+                else Object.assign(element.style, style);
+            }
         }
         return element;
     }

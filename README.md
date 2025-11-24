@@ -30,7 +30,27 @@ DOCTRE.js는 HTML 요소를 JSON Array 형식으로 표현하고, 이를 다시 
 - **HFNL**: HCNL을 JSON으로 변환한 상태를 지칭합니다.   
 마찬가지로 HCNL과 거의 동일하게 표현되므로 Frozen 상태라고 부릅니다.
 
+## 설치
+
+NPM을 통해 설치할 수 있습니다.
+
+```bash
+npm install doctre
+```
+
 ## 로드
+
+### Node.js / Bundler
+
+```javascript
+// CommonJS
+const Doctre = require('doctre');
+
+// ES Module
+import Doctre from 'doctre';
+```
+
+### Browser
 
 DOCTRE.js는 클래식 javascript .js 파일로 제공됩니다.   
 기본적으로 페이지에서 직접 로드하여 사용합니다.   
@@ -396,7 +416,27 @@ Ultimately, it was created to store the DOM Tree in the attributes of HTML.
 
 - **HFNL**: Refers to the state converted to JSON from HCNL. Similarly, it is called Frozen state because it is almost identical to HCNL.
 
+## Installation
+
+You can install it via NPM.
+
+```bash
+npm install doctre
+```
+
 ## Load
+
+### Node.js / Bundler
+
+```javascript
+// CommonJS
+const Doctre = require('doctre');
+
+// ES Module
+import Doctre from 'doctre';
+```
+
+### Browser
 
 DOCTRE.js is provided as a classic javascript .js file. It is basically loaded directly from the page.
 

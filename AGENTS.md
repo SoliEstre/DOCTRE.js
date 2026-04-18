@@ -35,6 +35,6 @@
 
 이 워크스페이스는 자체 git 리포를 보유. 커밋 시 `[Doctre][태그] 제목` 형식 권장.
 
-## 원격 URL 주의
+## 원격 URL
 
-현재 로컬 `origin` 이 구 리포명 `SoliEstre/JHOT.js.git` 로 설정되어 있음 (2026-04-18 확인). 공개 리포 `SoliEstre/DOCTRE.js` 와 일치하도록 `git remote set-url origin https://github.com/SoliEstre/DOCTRE.js.git` 실행 권장.
+`origin` → `https://github.com/SoliEstre/DOCTRE.js.git` (2026-04-18 정렬 완료, 이전 구 리포명 `JHOT.js.git` 에서 교체).

@@ -7,12 +7,24 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [
+        "estreui",
+        "doctre",
         "html",
         "json",
         "dom",
         "parser",
-        "serializer"
+        "serializer",
+        "template-engine",
+        "javascript"
     ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SoliEstre/DOCTRE.js.git"
+    },
+    "homepage": "https://github.com/SoliEstre/DOCTRE.js#readme",
+    "bugs": {
+        "url": "https://github.com/SoliEstre/DOCTRE.js/issues"
+    },
     "author": "Estre Soliette (SoliEstre)",
     "license": "MIT"
 }

@@ -1,2 +1,10 @@
+# .npmignore — npm 배포 제외 목록
+# .npmignore 가 존재하면 .gitignore 가 아닌 이 파일이 npm publish 의 제외 규칙이 된다.
+
+# 기본
 .git
 .gitignore
+
+# 허브 조율 관련 내부 문서 (npm 배포 대상 아님)
+AGENTS.md
+.agent/
